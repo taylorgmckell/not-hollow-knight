@@ -77,12 +77,17 @@ func _physics_process(delta: float) -> void:
 		_apply_corner_correction(delta)
 		_apply_ledge_forgiveness(delta)
 	var rising := velocity.y < 0.0
+	var was_on_floor := is_on_floor()
 	move_and_slide()
 	if rising and is_on_ceiling():
 		bonked.emit()
 	if is_on_floor():
 		coyote_timer = tuning.coyote_time
 		refill_air_moves()
+		# Landing (air -> ground) clears the dash cooldown. Only the transition:
+		# standing still must keep the cooldown between ground dashes.
+		if not was_on_floor:
+			dash_cooldown_timer = 0.0
 
 	var after := _state.post_move(delta)
 	if not after.is_empty():

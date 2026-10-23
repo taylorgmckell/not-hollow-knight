@@ -116,6 +116,37 @@ func test_dash_cooldown() -> void:
 	assert_true(states_seen.has(&"dash"), "dash allowed after cooldown")
 
 
+func test_landing_clears_dash_cooldown() -> void:
+	GameState.has_dash = true
+	tuning.dash_cooldown = 5.0  # long enough that only landing can clear it
+	add_block(Rect2(-2000, 0, 4000, 64))
+	player.global_position = Vector2(0, -60)
+	await tick(2)
+	await press(&"dash")
+	for i: int in 120:
+		await tick()
+		if player.is_on_floor() and player.state_name != &"dash":
+			break
+	assert_true(player.is_on_floor(), "landed")
+	assert_eq(player.dash_cooldown_timer, 0.0, "cooldown cleared on landing")
+	states_seen.clear()
+	await press(&"dash")
+	assert_true(states_seen.has(&"dash"), "can dash right after landing")
+
+
+func test_standing_still_keeps_ground_dash_cooldown() -> void:
+	GameState.has_dash = true
+	tuning.dash_cooldown = 5.0
+	add_block(Rect2(-2000, 0, 4000, 64))
+	await settle_on_floor()
+	await press(&"dash")
+	await tick(roundi(tuning.dash_time / DT) + 5)
+	assert_true(player.dash_cooldown_timer > 0.0, "cooldown still running on the ground")
+	states_seen.clear()
+	await press(&"dash")
+	assert_true(not states_seen.has(&"dash"), "no ground dash spam")
+
+
 func test_ground_dash_cancels_into_jump() -> void:
 	GameState.has_dash = true
 	add_block(Rect2(-2000, 0, 4000, 64))

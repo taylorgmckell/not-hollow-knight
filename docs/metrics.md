@@ -11,8 +11,9 @@ It prints every row of the tables below except coyote time and jump buffer,
 which are tuning values. One tile = 32 px. The player's collision box is
 20 × 40 px.
 
-Last measured 2026-10-23, `jump_height` = 176, `double_jump_height` = 168 and
-`corner_correction` = 16 (all tuned in playtest), other values default.
+Last measured 2026-10-23 with playtest tuning: `jump_height` = 176,
+`double_jump_height` = 168, `dash_cooldown` = 0.3, `wall_jump_push` = 299,
+`corner_correction` = 15; other values default.
 
 ## Base movement (no abilities)
 
@@ -31,14 +32,14 @@ Last measured 2026-10-23, `jump_height` = 176, `double_jump_height` = 168 and
 
 | Metric | Value | Tiles |
 |---|---|---|
-| Dash distance (0.2 s, cooldown 0.6 s) | 176 px | 5.5 |
+| Dash distance (0.2 s; cooldown 0.3 s, cleared on landing) | 176 px | 5.5 |
 | Peak with double jump at the apex | 345.1 px | 10.8 |
 | Highest pillar with double jump | 320 px | 10 (press up to ~0.1 s before the apex) |
 | Gap: coyote jump + dash at apex | 448 px | 14.0 |
 | Gap: coyote jump + double jump at apex | 458 px | 14.3 |
 | Gap: coyote jump + double jump + dash | 639 px | 20.0 |
 | Wall slide speed | 140 px/s | 4.4 tiles/s |
-| Wall jump | 128 px up, 300 px/s kick, input locked 0.12 s | 4 up |
+| Wall jump | 128 px up, 299 px/s kick, input locked 0.12 s | 4 up |
 
 Wall jumping climbs a 4-tile-wide shaft and also a single wall (tested
 headless). Grabbing a wall refills the air dash and double jump.
@@ -66,7 +67,7 @@ of h10. At 168 px a press from 152 px up clears h10 (guarded by a test).
 
 | Assist | Limit | Graybox section |
 |---|---|---|
-| Corner correction | 16 px sideways (default 6) | `corner`: an overhang to jump out from under, and a floating platform to jump onto from close. Headless sweep of 31 overhang timings: 20 bonk without the assist, 16 with it at 6 px, 2 with it at 16 px |
+| Corner correction | 15 px sideways (default 6) | `corner`: an overhang to jump out from under, and a floating platform to jump onto from close. Headless sweep of 31 overhang timings: 20 bonk without the assist, 16 with it at 6 px, 7 at 15 px, 2 at 16 px |
 | Ledge forgiveness | 6 px upward | `ledge`: top 3 px above the jump peak (`jump_height` + half the limit), reachable only with the assist |
 
 ## Courses
