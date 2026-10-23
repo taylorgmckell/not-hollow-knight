@@ -89,8 +89,19 @@ of h10. At 168 px a press from 152 px up clears h10 (guarded by a test).
 | F3 | Assists on/off |
 | F4 | Abilities on/off (all start unlocked in the graybox) |
 | F6 | Switch to the challenge course (and back) |
-| F7 | Preview art on/off (visual only; see CREDITS.md) |
+| F7 / touchpad click | Preview art on/off (visual only; see CREDITS.md) |
 | 1–7 | Jump to gaps, pillars, corner, ledge, dash, walls, double jump |
-| R | Return to the last section |
+| R / Options | Return to the last section (challenge: restart the run) |
 
 Missed gaps drop into a 2-tile pit you can climb out of.
+
+## Controller (PS5)
+
+| Button | Action |
+|---|---|
+| D-pad / left stick | Move (stick snaps to full speed past 40%) |
+| Cross | Jump (hold for higher) |
+| R2 | Dash (fires past 40% of the trigger) |
+| Square | Attack (from M3) |
+| Options | Same as R |
+| Touchpad click | Same as F7 |

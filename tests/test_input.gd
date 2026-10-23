@@ -2,11 +2,20 @@ extends TestCase
 ## Default bindings: simulated controller events reach the right actions.
 
 
+var _art_was_enabled := true
+
+
+func before_each() -> void:
+	_art_was_enabled = PreviewArt.enabled
+
+
 func after_each() -> void:
-	# Release everything so held inputs don't leak into later tests.
+	# Release everything so held inputs don't leak into later tests, and undo
+	# the art toggle the touchpad test fires.
+	PreviewArt.enabled = _art_was_enabled
 	_send_axis(JOY_AXIS_TRIGGER_RIGHT, 0.0)
-	_send_button(JOY_BUTTON_RIGHT_SHOULDER, false)
-	_send_button(JOY_BUTTON_A, false)
+	for button: JoyButton in [JOY_BUTTON_RIGHT_SHOULDER, JOY_BUTTON_A, JOY_BUTTON_START, JOY_BUTTON_TOUCHPAD]:
+		_send_button(button, false)
 
 
 func _send_axis(axis: JoyAxis, value: float) -> void:
@@ -48,3 +57,15 @@ func test_cross_jumps() -> void:
 	_send_button(JOY_BUTTON_A, true)
 	await tick()
 	assert_true(Input.is_action_pressed(&"jump"), "Cross (bottom face button) is jump")
+
+
+func test_options_restarts() -> void:
+	_send_button(JOY_BUTTON_START, true)
+	await tick()
+	assert_true(Input.is_action_pressed(&"debug_reset"), "Options is reset/restart")
+
+
+func test_touchpad_toggles_art() -> void:
+	_send_button(JOY_BUTTON_TOUCHPAD, true)
+	await tick()
+	assert_true(Input.is_action_pressed(&"debug_preview_art"), "touchpad click is the art toggle")

@@ -210,20 +210,38 @@ Kept deliberately thin so time stays on feel:
 
 ## 6. Milestones
 
-| # | Milestone | Contents | Exit check |
-|---|---|---|---|
-| M0 | Project setup | Godot project, folders, input map (keyboard + gamepad), debug overlay, CI running tests headless | Empty scene runs; tests run in CI |
-| M1 | Core movement | Run, jump, coyote, buffer, variable height, apex hang, fall gravity, corner correction | Graybox course feels tight in playtest |
-| M2 | Advanced movement | Dash, wall slide, wall jump, double jump, ability flags, challenge course | Metrics documented; clean challenge run (§2.4) |
-| M3 | Nail combat | Hitbox/hurtbox, 3-direction attacks, recoil, pogo, hit-stop, juice | Pogo chain test passes |
-| M4 | Health and Soul | Masks, i-frames, hazard respawn, Soul gain, heal, one spell | Heal interrupt works |
-| M5 | Enemies | Crawler, flyer, charger | Each one playtested in isolation |
-| M6 | Boss | 2-phase boss with arena | Difficulty targets met |
-| M7 | Slice world | Rooms, camera, bench, save, Shade, ability gate, HUD | Full slice playable start to finish |
-| M8 | Polish pass | Art, sound, VFX, tuning from playtests | External playtest of 5+ people |
+| # | Milestone | Contents | Exit check | Status |
+|---|---|---|---|---|
+| M0 | Project setup | Godot project, folders, input map (keyboard + gamepad), debug overlay, CI running tests headless | Empty scene runs; tests run in CI | Done 2026-10-22 |
+| M1 | Core movement | Run, jump, coyote, buffer, variable height, apex hang, fall gravity, corner correction | Graybox course feels tight in playtest | Done 2026-10-22 |
+| M2 | Advanced movement | Dash, wall slide, wall jump, double jump, ability flags, challenge course | Metrics documented; clean challenge run (§2.4) | Done 2026-10-23 |
+| M3 | Nail combat | Hitbox/hurtbox, 3-direction attacks, recoil, pogo, hit-stop, juice | Pogo chain test passes | Next |
+| M4 | Health and Soul | Masks, i-frames, hazard respawn, Soul gain, heal, one spell | Heal interrupt works |  |
+| M5 | Enemies | Crawler, flyer, charger | Each one playtested in isolation |  |
+| M6 | Boss | 2-phase boss with arena | Difficulty targets met |  |
+| M7 | Slice world | Rooms, camera, bench, save, Shade, ability gate, HUD | Full slice playable start to finish |  |
+| M8 | Polish pass | Art, sound, VFX, tuning from playtests | External playtest of 5+ people |  |
 
 M1–M4 is where most of the effort should go. Don't move past M4 until the
 controls are fun to use in an empty room.
+
+### Completed milestones
+
+- **M0 (2026-10-22):** Godot 4.7 project, code-defined input map (keyboard +
+  gamepad), debug overlay and tuning panel, headless test runner, CI on
+  GitHub Actions.
+- **M1 (2026-10-22):** all §2.2 feel features, graybox measuring course,
+  playtest log. Playtests tuned `jump_height` to 176 and `corner_correction`
+  to 16; an assists on/off playtest showed bonks at the overhang edge drop
+  from 56% to 11% (at the original 6 px).
+- **M2 (2026-10-23):** dash, wall slide, wall jump, double jump, ability
+  flags; challenge course; `double_jump_height` tuned to 168 after the h10
+  playtest. §2.4 done-check met: first non-practice challenge run finished
+  with 1 death, the second was clean (43.0 s), then three more clean runs
+  (25.2 s, 26.6 s, 24.0 s). The one death (spikes, 0.72 s after a normal
+  ground jump, no bonk) was reviewed as a mistimed jump, not the controls.
+  55 tests pass locally and in CI. Extras: CC0 preview art (F7), PS5
+  controller layout (dash on R2, Options restarts, touchpad toggles art).
 
 ---
 

@@ -36,6 +36,9 @@ const JOY_BUTTONS := {
 	&"move_down": [JOY_BUTTON_DPAD_DOWN],
 	&"jump": [JOY_BUTTON_A],
 	&"attack": [JOY_BUTTON_X],
+	# PS5: Options and the touchpad click, so a run never needs the keyboard.
+	&"debug_reset": [JOY_BUTTON_START],
+	&"debug_preview_art": [JOY_BUTTON_TOUCHPAD],
 }
 
 ## action -> [axis, direction]. Triggers (R2 = JOY_AXIS_TRIGGER_RIGHT) count

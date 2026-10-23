@@ -34,7 +34,7 @@ var _hud := Label.new()
 
 func controls_hint() -> String:
 	return "\n".join([
-		"F1 overlay   F2 tuning   F3 assists   F6 graybox   F7 art   R restart run",
+		"F1 overlay   F2 tuning   F3 assists   F6 graybox   F7/touchpad art   R/Options restart run",
 		"1-6 practice from a checkpoint (run won't count)",
 	])
 

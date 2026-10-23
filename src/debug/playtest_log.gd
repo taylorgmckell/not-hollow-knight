@@ -40,7 +40,9 @@ func _ready() -> void:
 	if not player or (DisplayServer.get_name() == "headless" and not record_headless):
 		return
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(log_dir))
-	var stamp := Time.get_datetime_string_from_system().replace(":", "-")
+	# Milliseconds too: switching courses (F6) can start two sessions in one second.
+	var stamp := "%s-%03d" % [Time.get_datetime_string_from_system().replace(":", "-"),
+			Time.get_ticks_msec() % 1000]
 	file_path = "%s/%s.jsonl" % [log_dir, stamp]
 	_file = FileAccess.open(file_path, FileAccess.WRITE)
 	if not _file:
