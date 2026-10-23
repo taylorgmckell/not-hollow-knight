@@ -18,6 +18,7 @@ const KEYS := {
 	&"debug_assists": [KEY_F3],
 	&"debug_abilities": [KEY_F4],
 	&"debug_switch_course": [KEY_F6],
+	&"debug_preview_art": [KEY_F7],
 	&"debug_reset": [KEY_R],
 	&"debug_section_1": [KEY_1],
 	&"debug_section_2": [KEY_2],

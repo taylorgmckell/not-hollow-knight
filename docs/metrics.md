@@ -89,6 +89,7 @@ of h10. At 168 px a press from 152 px up clears h10 (guarded by a test).
 | F3 | Assists on/off |
 | F4 | Abilities on/off (all start unlocked in the graybox) |
 | F6 | Switch to the challenge course (and back) |
+| F7 | Preview art on/off (visual only; see CREDITS.md) |
 | 1–7 | Jump to gaps, pillars, corner, ledge, dash, walls, double jump |
 | R | Return to the last section |
 
