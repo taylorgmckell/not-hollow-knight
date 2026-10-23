@@ -1,8 +1,8 @@
 class_name JumpState
 extends PlayerState
-## Rising part of a ground, wall or double jump (see Player.next_jump_kind).
+## Rising part of a ground, wall, double or pogo jump (Player.next_jump_kind).
 ## Releasing jump early cuts upward velocity (variable jump height), but never
-## before `min_jump_time`.
+## before `min_jump_time`. Pogo bounces are fixed height and never cut.
 
 var _time := 0.0
 var _cut := false
@@ -21,12 +21,14 @@ func enter() -> void:
 		&"double":
 			player.velocity.y = -t.velocity_for_height(t.double_jump_height)
 			player.double_jump_available = false
+		&"pogo":
+			player.velocity.y = -t.velocity_for_height(t.pogo_height)
 		_:
 			player.velocity.y = -t.jump_velocity()
 	player.last_jump_kind = kind
 	player.next_jump_kind = &"ground"
 	_time = 0.0
-	_cut = false
+	_cut = kind == &"pogo"
 
 
 func physics_update(delta: float) -> StringName:

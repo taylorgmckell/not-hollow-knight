@@ -3,8 +3,9 @@ extends BlockCourse
 ##
 ## Gaps and pillar heights step up one tile at a time so jump reach can be read
 ## straight off the labels. Measured reach is recorded in docs/metrics.md.
-## Failing is cheap here on purpose: impossible gaps drop into climb-out pits.
-## The challenge course (F6) is where deaths count.
+## Failing is cheap here on purpose: impossible gaps drop into climb-out pits,
+## and spikes just send you back to the section start. The challenge course
+## (F6) is where deaths count.
 
 ## Depth of the pits under the gaps, in tiles. Shallow enough to jump out of.
 const PIT_DEPTH := 2
@@ -18,7 +19,8 @@ func _course_ready() -> void:
 
 
 func _course_physics(_delta: float) -> void:
-	if player.global_position.y > KILL_Y or Input.is_action_just_pressed(&"debug_reset"):
+	if (player.global_position.y > KILL_Y or touching_hazard()
+			or Input.is_action_just_pressed(&"debug_reset")):
 		player.respawn(_spawn_point)
 
 
@@ -30,7 +32,8 @@ func _on_section_key(index: int) -> void:
 func controls_hint() -> String:
 	return "\n".join([
 		"F1 overlay   F2 tuning   F3 assists   F4 abilities   F6 challenge   F7/touchpad art   R/Options reset",
-		"1 gaps   2 pillars   3 corner   4 ledge   5 dash   6 walls   7 double jump",
+		"1 gaps  2 pillars  3 corner  4 ledge  5 dash  6 walls  7 double jump  8 combat",
+		"X/Square attack (hold up or down to aim)",
 	])
 
 
@@ -108,6 +111,35 @@ func build() -> void:
 		add_label(x + 1.5, GROUND_ROW - height - 1, "h %d" % height)
 		x += 3
 	x += 6
+
+	# --- M3 combat ---
+
+	# Dummies: two on the ground for side slashes, one hanging for up-slashes
+	# (its underside 2.5 tiles up, inside the up-slash's reach from the ground).
+	add_section("combat", x + 1)
+	add_dummy(x + 5, GROUND_ROW)
+	add_dummy(x + 8, GROUND_ROW)
+	add_dummy(x + 12, GROUND_ROW - 2.5)
+	add_label(x + 8, GROUND_ROW - 4, "dummies: side and up")
+	x += 16
+	add_block(Rect2(ground_start, GROUND_ROW, x - ground_start, 4))
+
+	# Pogo chain over a spike floor: two lanterns, a spiked post, two more
+	# lanterns. Jump off the edge, then down-slash (hold down + attack) on each.
+	var chain := x
+	add_block(Rect2(chain, GROUND_ROW + 2, 20, 2))
+	add_hazard(Rect2(chain, GROUND_ROW + 1.5, 10, 0.5))
+	add_hazard(Rect2(chain + 12, GROUND_ROW + 1.5, 8, 0.5))
+	add_dummy(chain + 3, GROUND_ROW - 1, true)
+	add_dummy(chain + 7, GROUND_ROW - 1, true)
+	add_block(Rect2(chain + 10, GROUND_ROW, 2, 2))
+	add_hazard(Rect2(chain + 10, GROUND_ROW - 0.5, 2, 0.5))
+	add_dummy(chain + 15, GROUND_ROW - 1, true)
+	add_dummy(chain + 19, GROUND_ROW - 1, true)
+	add_label(chain + 10, GROUND_ROW - 4, "pogo chain")
+	x += 20
+	ground_start = x
+	x += 10
 	add_block(Rect2(ground_start, GROUND_ROW, x - ground_start, 4))
 
 	# Right wall, tall enough to hold in the abilities area.

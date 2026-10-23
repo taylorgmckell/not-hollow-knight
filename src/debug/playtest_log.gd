@@ -9,7 +9,8 @@ extends Node
 ## `describe(position) -> Dictionary`.
 ## Events: session_start, jump (with kind: ground/wall/double), dash,
 ## wall_grab, land, bonk, assist, respawn, assists_toggled, abilities_toggled,
-## tuning, session_end. On the challenge course also: run_start, run_finish,
+## tuning, attack (direction), nail_hit (target, direction, pogo),
+## session_end. On the challenge course also: run_start, run_finish,
 ## run_abandon, checkpoint, and death (with cause and what happened just
 ## before it, to judge whether the controls were at fault).
 ## Each line is flushed so a killed run keeps its data.
@@ -58,6 +59,10 @@ func _ready() -> void:
 		_record("assist", {kind = kind, nudge_px = roundi(nudge.length())}))
 	player.respawned.connect(func(_at: Vector2) -> void: _record("respawn"))
 	player.state_changed.connect(_on_player_state_changed)
+	player.nail.swung.connect(func(direction: StringName) -> void:
+		_record("attack", {direction = direction}))
+	player.nail.hit.connect(func(box: Hurtbox, direction: StringName, pogo: bool) -> void:
+		_record("nail_hit", {target = _target_kind(box), direction = direction, pogo = pogo}))
 	player.tuning.changed.connect(func() -> void: _tuning_changed_at = _now())
 	_connect_course()
 	var course_name := String(course.name) if course else ""
@@ -98,6 +103,13 @@ func _on_player_state_changed(from: StringName, to: StringName) -> void:
 		_record("wall_grab")
 	elif from in [&"jump", &"fall", &"dash", &"wall_slide"] and (to == &"idle" or to == &"run"):
 		_record("land")
+
+
+static func _target_kind(box: Hurtbox) -> String:
+	var dummy := box.get_parent() as TrainingDummy
+	if dummy:
+		return "lantern" if dummy.lantern else "dummy"
+	return "spikes" if not box.takes_damage else "other"
 
 
 ## Hooks up the challenge course's signals when the course has them.

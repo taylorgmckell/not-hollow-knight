@@ -18,7 +18,7 @@ const LABEL_WIDTH := 240.0
 const FEATURE_RADIUS := 6.0
 const SECTION_ACTIONS: Array[StringName] = [
 	&"debug_section_1", &"debug_section_2", &"debug_section_3", &"debug_section_4",
-	&"debug_section_5", &"debug_section_6", &"debug_section_7",
+	&"debug_section_5", &"debug_section_6", &"debug_section_7", &"debug_section_8",
 ]
 
 ## Scene that F6 switches to.
@@ -28,8 +28,10 @@ const SECTION_ACTIONS: Array[StringName] = [
 var blocks: Array[Rect2] = []
 var hazards: Array[Rect2] = []
 var labels: Array[Dictionary] = []
-## Each: {name, at}. Number keys 1-7 trigger `_on_section_key`.
+## Each: {name, at}. Number keys 1-8 trigger `_on_section_key`.
 var sections: Array[Dictionary] = []
+## Training dummies and pogo lanterns to spawn: {at (tiles), lantern}.
+var dummies: Array[Dictionary] = []
 
 @onready var player: Player = $Player
 
@@ -43,6 +45,13 @@ func _ready() -> void:
 	build()
 	for rect: Rect2 in blocks:
 		_add_collider(rect)
+	for rect: Rect2 in hazards:
+		_add_hazard_hurtbox(rect)
+	for spec: Dictionary in dummies:
+		var dummy := TrainingDummy.new()
+		dummy.lantern = spec.lantern
+		dummy.position = spec.at * TILE
+		add_child(dummy)
 	add_child(CourseSkin.new(self))
 	queue_redraw()
 	_course_ready()
@@ -96,8 +105,15 @@ func add_block(rect: Rect2) -> void:
 
 
 ## Spikes: no collider, touching them is checked with `touching_hazard`.
+## A down-slash bounces off them (pogo).
 func add_hazard(rect: Rect2) -> void:
 	hazards.append(rect)
+
+
+## A dummy stands with its feet at the tile position; a lantern floats
+## centred on it.
+func add_dummy(tile_x: float, tile_y: float, lantern := false) -> void:
+	dummies.append({at = Vector2(tile_x, tile_y), lantern = lantern})
 
 
 func add_label(tile_x: float, tile_y: float, text: String) -> void:
@@ -113,6 +129,8 @@ func add_section(section_name: String, tile_x: float, tile_y: float = GROUND_ROW
 
 
 func touching_hazard() -> bool:
+	if player.hazard_grace_timer > 0.0:
+		return false
 	var body := Rect2(player.global_position + Vector2(-10, -40), Vector2(20, 40))
 	for rect: Rect2 in hazards:
 		if body.intersects(Rect2(rect.position * TILE, rect.size * TILE)):
@@ -147,6 +165,12 @@ func _add_collider(rect: Rect2) -> void:
 	body.position = rect.get_center() * TILE
 	body.add_child(shape)
 	add_child(body)
+
+
+func _add_hazard_hurtbox(rect: Rect2) -> void:
+	var box := Hurtbox.make_rect(rect.size * TILE, rect.get_center() * TILE, true, false)
+	box.collision_layer = Hurtbox.LAYER_HAZARD
+	add_child(box)
 
 
 func _draw_spikes(area: Rect2) -> void:

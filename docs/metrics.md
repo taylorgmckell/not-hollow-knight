@@ -49,6 +49,23 @@ rest of the first jump's rise. Playtesters pressed about 0.1 s early (129–168 
 up); at the original 144 px double jump their best reached 311 px, 9 px short
 of h10. At 168 px a press from 152 px up clears h10 (guarded by a test).
 
+## Nail (M3)
+
+| Metric | Value |
+|---|---|
+| Swing cooldown (start to start) | 0.38 s; a press up to 0.1 s early is buffered |
+| Hitbox live time | 0.08 s; each target hit once per swing |
+| Side reach | 10–72 px in front of the player's centre, 34 px tall |
+| Up reach | 36–96 px above the feet, 44 px wide |
+| Down reach (air only) | 52 px below the feet, 44 px wide |
+| Side-hit recoil | 220 px/s back for 0.08 s (input locked) |
+| Pogo bounce | 112 px (3.5 tiles), fixed height; refills air dash, double jump and dash cooldown |
+| Hit-stop | 0.05 s per hit, 0.08 s when a dummy breaks |
+
+Down-slashes bounce off anything pogo-able: dummies, lanterns and spikes.
+Side and up swings ignore spikes. Swinging doesn't slow running; you can't
+swing mid-dash.
+
 ## Design rules that follow
 
 - **Gaps:** up to 7 tiles is comfortable, 8 is an expert-only coyote jump
@@ -91,7 +108,8 @@ of h10. At 168 px a press from 152 px up clears h10 (guarded by a test).
 | F4 | Abilities on/off (all start unlocked in the graybox) |
 | F6 | Switch to the challenge course (and back) |
 | F7 / touchpad click | Preview art on/off (visual only; see CREDITS.md) |
-| 1–7 | Jump to gaps, pillars, corner, ledge, dash, walls, double jump |
+| X or J | Attack: hold up to swing up, hold down in the air to swing down (pogo) |
+| 1–8 | Jump to gaps, pillars, corner, ledge, dash, walls, double jump, combat |
 | R / Options | Return to the last section (challenge: restart the run) |
 
 Missed gaps drop into a 2-tile pit you can climb out of.
@@ -103,6 +121,6 @@ Missed gaps drop into a 2-tile pit you can climb out of.
 | D-pad / left stick | Move (stick snaps to full speed past 40%) |
 | Cross | Jump (hold for higher) |
 | R2 | Dash (fires past 40% of the trigger) |
-| Square | Attack (from M3) |
+| Square | Attack (hold up or down to aim) |
 | Options | Same as R |
 | Touchpad click | Same as F7 |

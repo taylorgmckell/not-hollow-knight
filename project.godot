@@ -19,6 +19,8 @@ config/features=PackedStringArray("4.7", "GL Compatibility")
 InputSetup="*res://src/autoload/input_setup.gd"
 GameState="*res://src/autoload/game_state.gd"
 PreviewArt="*res://src/preview/preview_art.gd"
+HitStop="*res://src/autoload/hit_stop.gd"
+Sfx="*res://src/autoload/sfx.gd"
 
 [debug]
 

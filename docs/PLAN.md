@@ -215,8 +215,8 @@ Kept deliberately thin so time stays on feel:
 | M0 | Project setup | Godot project, folders, input map (keyboard + gamepad), debug overlay, CI running tests headless | Empty scene runs; tests run in CI | Done 2026-10-22 |
 | M1 | Core movement | Run, jump, coyote, buffer, variable height, apex hang, fall gravity, corner correction | Graybox course feels tight in playtest | Done 2026-10-22 |
 | M2 | Advanced movement | Dash, wall slide, wall jump, double jump, ability flags, challenge course | Metrics documented; clean challenge run (§2.4) | Done 2026-10-23 |
-| M3 | Nail combat | Hitbox/hurtbox, 3-direction attacks, recoil, pogo, hit-stop, juice | Pogo chain test passes | Next |
-| M4 | Health and Soul | Masks, i-frames, hazard respawn, Soul gain, heal, one spell | Heal interrupt works |  |
+| M3 | Nail combat | Hitbox/hurtbox, 3-direction attacks, recoil, pogo, hit-stop, juice | Pogo chain test passes | Done 2026-10-23 |
+| M4 | Health and Soul | Masks, i-frames, hazard respawn, Soul gain, heal, one spell | Heal interrupt works | Next |
 | M5 | Enemies | Crawler, flyer, charger | Each one playtested in isolation |  |
 | M6 | Boss | 2-phase boss with arena | Difficulty targets met |  |
 | M7 | Slice world | Rooms, camera, bench, save, Shade, ability gate, HUD | Full slice playable start to finish |  |
@@ -242,6 +242,18 @@ controls are fun to use in an empty room.
   ground jump, no bonk) was reviewed as a mistimed jump, not the controls.
   55 tests pass locally and in CI. Extras: CC0 preview art (F7), PS5
   controller layout (dash on R2, Options restarts, touchpad toggles art).
+- **M3 (2026-10-23):** nail with side, up and
+  down (air) swings, buffered cooldown, one hit per target per swing,
+  side-hit recoil, pogo off dummies, lanterns and spikes (refills air moves),
+  hit-stop, camera shake, white flash, slash VFX and synthesized swing/hit/pogo
+  sounds. Graybox section 8 has dummies and a pogo chain over spikes. The exit
+  check (an automated pogo chain across four lanterns and a spiked post with no
+  spike contact) passes. Playtest: "feels good"; 151 swings and 79 hits in the
+  main session, pogo chain cleared three times, long chains pogoing straight
+  off floor spikes. The log showed three deaths on the same tick as a
+  successful spike pogo (the slash connected as the body sank into the
+  spikes); fixed with a 0.05 s spike grace after any pogo, with a regression
+  test. 74 tests.
 
 ---
 

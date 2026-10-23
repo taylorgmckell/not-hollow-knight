@@ -4,6 +4,7 @@
 [ext_resource type="Resource" path="res://src/player/player_tuning.tres" id="2_tuning"]
 [ext_resource type="Script" path="res://src/player/player_visual.gd" id="3_visual"]
 [ext_resource type="Script" path="res://src/preview/player_skin.gd" id="4_skin"]
+[ext_resource type="Script" path="res://src/player/nail_attack.gd" id="5_nail"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
 size = Vector2(20, 40)
@@ -31,3 +32,6 @@ polygon = PackedVector2Array(3, -34, 8, -34, 8, -28, 3, -28)
 
 [node name="Skin" type="Node2D" parent="."]
 script = ExtResource("4_skin")
+
+[node name="Nail" type="Node2D" parent="."]
+script = ExtResource("5_nail")

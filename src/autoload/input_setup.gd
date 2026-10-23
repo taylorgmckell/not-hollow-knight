@@ -27,6 +27,7 @@ const KEYS := {
 	&"debug_section_5": [KEY_5],
 	&"debug_section_6": [KEY_6],
 	&"debug_section_7": [KEY_7],
+	&"debug_section_8": [KEY_8],
 }
 
 const JOY_BUTTONS := {

@@ -107,6 +107,9 @@ func _describe() -> String:
 			"ready" if player.double_jump_available else "used",
 			player.dash_cooldown_timer],
 		"abilities %s" % ("ON" if GameState.has_dash else "OFF"),
+		"nail    %s   cd %.2f   last %s" % [
+			"SWING" if player.nail.is_active() else "ready" if player.nail.cooldown_timer <= 0.0 else "-",
+			player.nail.cooldown_timer, player.nail.direction],
 		"assists %s   corner x%d   ledge x%d   bonks x%d" % [
 			"ON" if player.assists_enabled else "OFF",
 			_assist_counts[&"corner"], _assist_counts[&"ledge"], _assist_counts[&"bonk"]],

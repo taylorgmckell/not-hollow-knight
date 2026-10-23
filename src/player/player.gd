@@ -14,6 +14,10 @@ signal respawned(at: Vector2)
 
 ## How many state changes may chain within one tick before we stop.
 const MAX_TRANSITIONS_PER_TICK := 4
+## After a pogo, spikes can't hurt for this long. A down-slash can connect on
+## the same tick the falling body sinks a few px into spikes; the bounce needs
+## a couple of ticks to carry the player clear (playtest finding).
+const POGO_HAZARD_GRACE := 0.05
 
 @export var tuning: PlayerTuning
 
@@ -42,9 +46,13 @@ var wall_side := 0
 var wall_coyote_timer := 0.0
 ## While positive, apply_horizontal leaves velocity.x alone (wall-jump kick).
 var horizontal_lock_timer := 0.0
+## While positive, courses ignore spike contact (see POGO_HAZARD_GRACE).
+var hazard_grace_timer := 0.0
 
 var _states: Dictionary[StringName, PlayerState] = {}
 var _state: PlayerState
+
+@onready var nail: NailAttack = $Nail
 
 
 func _ready() -> void:
@@ -93,6 +101,8 @@ func _physics_process(delta: float) -> void:
 	if not after.is_empty():
 		change_state(after)
 
+	nail.physics_update(delta)
+
 
 func change_state(next: StringName) -> void:
 	assert(_states.has(next), "Unknown player state: %s" % next)
@@ -113,10 +123,30 @@ func respawn(at: Vector2) -> void:
 	jump_buffer_timer = 0.0
 	wall_coyote_timer = 0.0
 	horizontal_lock_timer = 0.0
+	hazard_grace_timer = 0.0
 	dash_cooldown_timer = 0.0
 	refill_air_moves()
+	nail.cooldown_timer = 0.0
+	nail.active_timer = 0.0
+	nail.buffer_timer = 0.0
 	change_state(&"fall")
 	respawned.emit(at)
+
+
+## Down-slash bounce: a fixed-height jump that also refreshes air moves and
+## the dash cooldown, so pogo chains can mix in dashes and double jumps.
+func pogo() -> void:
+	hazard_grace_timer = POGO_HAZARD_GRACE
+	refill_air_moves()
+	dash_cooldown_timer = 0.0
+	next_jump_kind = &"pogo"
+	change_state(&"jump")
+
+
+## Side-hit recoil: pushed away from the target with input briefly locked.
+func recoil(direction_x: int) -> void:
+	velocity.x = direction_x * tuning.recoil_speed
+	horizontal_lock_timer = tuning.recoil_time
 
 
 func refill_air_moves() -> void:
@@ -219,6 +249,7 @@ func _tick_timers(delta: float) -> void:
 	wall_coyote_timer = maxf(wall_coyote_timer - delta, 0.0)
 	horizontal_lock_timer = maxf(horizontal_lock_timer - delta, 0.0)
 	dash_cooldown_timer = maxf(dash_cooldown_timer - delta, 0.0)
+	hazard_grace_timer = maxf(hazard_grace_timer - delta, 0.0)
 
 
 ## Rising into a ceiling corner by a few pixels slides the player around it.

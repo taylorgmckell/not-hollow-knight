@@ -127,3 +127,27 @@ func test_death_is_logged_with_context() -> void:
 		assert_eq(deaths[0].cause, "pit", "cause")
 		assert_eq(deaths[0].feature, "gap 4", "tagged with the gap")
 		assert_true(deaths[0].has("since_last_bonk_s"), "bonk context included")
+
+
+## Playtest finding: a down-slash can connect on the same tick the falling body
+## sinks into spikes. The pogo must still save the player.
+func test_late_pogo_off_spikes_is_not_a_death() -> void:
+	var spike_top := (BlockCourse.GROUND_ROW - 0.5) * BlockCourse.TILE
+	var feet_at_hit := [NAN]
+	player.nail.hit.connect(func(_b: Hurtbox, _d: StringName, pogo: bool) -> void:
+		if pogo:
+			feet_at_hit[0] = player.global_position.y)
+	player.respawn(Vector2(46 * BlockCourse.TILE, 0))
+	player.input.move_y = 1.0
+	for i: int in 120:
+		await tick()
+		# As late as possible: the slash only connects after this tick's fall.
+		if player.velocity.y > 0.0 and spike_top - player.global_position.y < player.velocity.y / 60.0:
+			break
+	player.input.attack_pressed = true
+	await tick()
+	player.input.attack_pressed = false
+	await tick(10)
+	assert_true(feet_at_hit[0] > spike_top, "the slash connected with the body already in the spikes (feet %.1f, spikes %.1f)" % [feet_at_hit[0], spike_top])
+	assert_eq(player.last_jump_kind, &"pogo", "bounced")
+	assert_eq(course.deaths, 0, "a pogo that connects isn't a death")

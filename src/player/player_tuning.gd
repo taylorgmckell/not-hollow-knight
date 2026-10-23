@@ -51,6 +51,22 @@ extends Resource
 @export_group("Double jump")
 @export_range(16.0, 320.0, 1.0, "suffix:px") var double_jump_height := 144.0
 
+@export_group("Nail")
+@export_range(1, 10, 1) var nail_damage := 1
+## Time from one swing starting until the next can start.
+@export_range(0.1, 1.0, 0.01, "suffix:s") var attack_cooldown := 0.38
+## How long a swing's hitbox stays live.
+@export_range(0.02, 0.3, 0.01, "suffix:s") var attack_active_time := 0.08
+## A press this long before the cooldown ends still swings.
+@export_range(0.0, 0.3, 0.005, "suffix:s") var attack_buffer_time := 0.1
+## Side hits push the player back this fast, with input locked briefly.
+@export_range(0.0, 600.0, 1.0, "suffix:px/s") var recoil_speed := 220.0
+@export_range(0.0, 0.3, 0.005, "suffix:s") var recoil_time := 0.08
+## Height of the bounce from a down-slash (pogo). Fixed: not cut by releasing jump.
+@export_range(32.0, 320.0, 1.0, "suffix:px") var pogo_height := 112.0
+@export_range(0.0, 1000.0, 10.0, "suffix:px/s") var nail_knockback := 300.0
+@export_range(0.0, 0.2, 0.005, "suffix:s") var hit_stop_time := 0.05
+
 @export_group("Forgiveness")
 ## Max sideways nudge around a ceiling corner that clips the head.
 @export_range(0, 16, 1, "suffix:px") var corner_correction := 6
