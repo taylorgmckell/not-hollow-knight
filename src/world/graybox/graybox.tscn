@@ -9,6 +9,7 @@
 
 [node name="Graybox" type="Node2D"]
 script = ExtResource("1_graybox")
+other_course = "res://src/world/challenge/challenge.tscn"
 
 [node name="Player" parent="." instance=ExtResource("2_player")]
 

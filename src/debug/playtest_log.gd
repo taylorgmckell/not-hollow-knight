@@ -9,7 +9,10 @@ extends Node
 ## `describe(position) -> Dictionary`.
 ## Events: session_start, jump (with kind: ground/wall/double), dash,
 ## wall_grab, land, bonk, assist, respawn, assists_toggled, abilities_toggled,
-## tuning, session_end. Each line is flushed so a killed run keeps its data.
+## tuning, session_end. On the challenge course also: run_start, run_finish,
+## run_abandon, checkpoint, and death (with cause and what happened just
+## before it, to judge whether the controls were at fault).
+## Each line is flushed so a killed run keeps its data.
 
 ## Live tuning changes are logged once they settle for this long.
 const TUNING_SETTLE_TIME := 1.0
@@ -28,6 +31,9 @@ var _counts: Dictionary[String, int] = {}
 var _assists_enabled := true
 var _abilities_enabled := false
 var _tuning_changed_at := -1.0
+var _last_bonk_at := -INF
+var _last_jump_at := -INF
+var _last_jump_kind := ""
 
 
 func _ready() -> void:
@@ -43,13 +49,17 @@ func _ready() -> void:
 	_start_ms = Time.get_ticks_msec()
 	_assists_enabled = player.assists_enabled
 	_abilities_enabled = GameState.has_dash
-	player.bonked.connect(_record.bind("bonk"))
+	player.bonked.connect(func() -> void:
+		_last_bonk_at = _now()
+		_record("bonk"))
 	player.assisted.connect(func(kind: StringName, nudge: Vector2) -> void:
 		_record("assist", {kind = kind, nudge_px = roundi(nudge.length())}))
 	player.respawned.connect(func(_at: Vector2) -> void: _record("respawn"))
 	player.state_changed.connect(_on_player_state_changed)
 	player.tuning.changed.connect(func() -> void: _tuning_changed_at = _now())
-	_record("session_start", {tuning = _tuning_snapshot(), godot = Engine.get_version_info().string})
+	_connect_course()
+	var course_name := String(course.name) if course else ""
+	_record("session_start", {course = course_name, tuning = _tuning_snapshot(), godot = Engine.get_version_info().string})
 	print("Playtest log: %s" % ProjectSettings.globalize_path(file_path))
 
 
@@ -77,6 +87,8 @@ func _exit_tree() -> void:
 
 func _on_player_state_changed(from: StringName, to: StringName) -> void:
 	if to == &"jump":
+		_last_jump_at = _now()
+		_last_jump_kind = player.last_jump_kind
 		_record("jump", {kind = player.last_jump_kind})
 	elif to == &"dash":
 		_record("dash", {direction = player.dash_direction})
@@ -84,6 +96,29 @@ func _on_player_state_changed(from: StringName, to: StringName) -> void:
 		_record("wall_grab")
 	elif from in [&"jump", &"fall", &"dash", &"wall_slide"] and (to == &"idle" or to == &"run"):
 		_record("land")
+
+
+## Hooks up the challenge course's signals when the course has them.
+func _connect_course() -> void:
+	if not course or not course.has_signal(&"died"):
+		return
+	course.died.connect(func(cause: String) -> void:
+		_record("death", {
+			cause = cause,
+			run = course.run_number,
+			deaths_this_run = course.deaths,
+			last_jump_kind = _last_jump_kind,
+			since_last_jump_s = snappedf(_now() - _last_jump_at, 0.01),
+			since_last_bonk_s = snappedf(_now() - _last_bonk_at, 0.01),
+		}))
+	course.checkpoint_reached.connect(func(checkpoint_name: String) -> void:
+		_record("checkpoint", {checkpoint = checkpoint_name, run = course.run_number}))
+	course.run_started.connect(func() -> void:
+		_record("run_start", {run = course.run_number, practice = course.practice}))
+	course.run_finished.connect(func(time: float, deaths: int, practice: bool) -> void:
+		_record("run_finish", {run = course.run_number, time_s = snappedf(time, 0.01), deaths = deaths, practice = practice}))
+	course.run_abandoned.connect(func(time: float, deaths: int) -> void:
+		_record("run_abandon", {run = course.run_number, time_s = snappedf(time, 0.01), deaths = deaths}))
 
 
 func _record(event: String, extra: Dictionary = {}) -> void:

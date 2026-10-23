@@ -111,6 +111,11 @@ func _describe() -> String:
 			"ON" if player.assists_enabled else "OFF",
 			_assist_counts[&"corner"], _assist_counts[&"ledge"], _assist_counts[&"bonk"]],
 		"",
-		"F1 overlay   F2 tuning   F3 assists   F4 abilities   R reset",
-		"1 gaps   2 pillars   3 corner   4 ledge   5 dash   6 walls   7 double jump",
+		_controls_hint(),
 	])
+
+
+## Key help comes from the course, since each one binds keys differently.
+func _controls_hint() -> String:
+	var course := get_parent()
+	return course.controls_hint() if course.has_method(&"controls_hint") else ""

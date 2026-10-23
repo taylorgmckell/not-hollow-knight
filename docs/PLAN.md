@@ -82,12 +82,24 @@ docs/
   timers, plus a trail of recent positions to visualise jump arcs.
 - **Live tuning panel** (F2): sliders bound to `player_tuning.tres`, with a save
   button so good values are kept.
-- **Graybox test level** with measured gaps and heights (1–6 tiles) so jump reach is
-  known and level design can rely on it. Write those numbers into `docs/metrics.md`.
+- **Graybox (measuring course)** with measured gaps and heights so reach is known
+  and level design can rely on it. It deliberately includes impossible gaps and
+  heights to find the limits, so failing is cheap (climb-out pits, number keys
+  to jump between sections). Numbers go in `docs/metrics.md`.
+- **Challenge course (acceptance course)**, switched to with F6. Built only from
+  moves inside the *comfortable* range in `docs/metrics.md`. Pits and spikes are
+  lethal and return you to the last checkpoint; the HUD shows run time and
+  deaths, and the playtest log records each death with its cause, feature and
+  what happened just before (last jump, time since a bonk).
 
 ### 2.4 Done when
 
-- A playtester can clear the graybox course with no deaths caused by the controls.
+- A playtester finishes the challenge course with **zero deaths** in at least one
+  of their first three non-practice runs, and every death in the playtest log
+  has been reviewed with none attributed to the controls (e.g. a bonk the corner
+  assist should have covered, or a jump press that didn't fire). Deaths caused
+  by a "comfortable" number being wrong mean `docs/metrics.md` (or the course)
+  gets fixed.
 - Jump, dash and wall-jump distances are recorded in `docs/metrics.md`.
 - Movement replay tests pass: scripted inputs produce the expected landing positions
   within a tolerance.
@@ -202,7 +214,7 @@ Kept deliberately thin so time stays on feel:
 |---|---|---|---|
 | M0 | Project setup | Godot project, folders, input map (keyboard + gamepad), debug overlay, CI running tests headless | Empty scene runs; tests run in CI |
 | M1 | Core movement | Run, jump, coyote, buffer, variable height, apex hang, fall gravity, corner correction | Graybox course feels tight in playtest |
-| M2 | Advanced movement | Dash, wall slide, wall jump, double jump, ability flags | Metrics documented |
+| M2 | Advanced movement | Dash, wall slide, wall jump, double jump, ability flags, challenge course | Metrics documented; clean challenge run (§2.4) |
 | M3 | Nail combat | Hitbox/hurtbox, 3-direction attacks, recoil, pogo, hit-stop, juice | Pogo chain test passes |
 | M4 | Health and Soul | Masks, i-frames, hazard respawn, Soul gain, heal, one spell | Heal interrupt works |
 | M5 | Enemies | Crawler, flyer, charger | Each one playtested in isolation |

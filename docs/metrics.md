@@ -69,6 +69,17 @@ of h10. At 168 px a press from 152 px up clears h10 (guarded by a test).
 | Corner correction | 16 px sideways (default 6) | `corner`: an overhang to jump out from under, and a floating platform to jump onto from close. Headless sweep of 31 overhang timings: 20 bonk without the assist, 16 with it at 6 px, 2 with it at 16 px |
 | Ledge forgiveness | 6 px upward | `ledge`: top 3 px above the jump peak (`jump_height` + half the limit), reachable only with the assist |
 
+## Courses
+
+- **Graybox** (main scene): the measuring course. Impossible gaps and heights
+  are there on purpose to find limits; missed gaps drop into climb-out pits.
+- **Challenge** (F6 from the graybox): the acceptance course, built only from
+  the comfortable ranges above. Pits and spikes kill; you respawn at the last
+  checkpoint. R restarts the run; 1–6 jump to a checkpoint for practice (that
+  run doesn't count). Segments: plain gaps 4/6/7, spikes, a 5-tile step, an
+  overhang gap, floating platforms, dash gaps 10/12, wall shaft and a 6-tile
+  high gap, a 9-tile tower and 12-tile high gap, and a 16-tile finale.
+
 ## Graybox controls
 
 | Key | Action |
@@ -77,6 +88,7 @@ of h10. At 168 px a press from 152 px up clears h10 (guarded by a test).
 | F2 | Live tuning panel; Save writes `player_tuning.tres` |
 | F3 | Assists on/off |
 | F4 | Abilities on/off (all start unlocked in the graybox) |
+| F6 | Switch to the challenge course (and back) |
 | 1–7 | Jump to gaps, pillars, corner, ledge, dash, walls, double jump |
 | R | Return to the last section |
 

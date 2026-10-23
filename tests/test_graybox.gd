@@ -4,7 +4,7 @@ extends TestCase
 
 const GRAYBOX_SCENE := preload("res://src/world/graybox/graybox.tscn")
 
-var graybox: Node2D
+var graybox: BlockCourse
 var player: Player
 
 
@@ -17,7 +17,7 @@ func before_each() -> void:
 
 
 func test_holding_right_and_jumping_reaches_the_pillars() -> void:
-	var pillars_x: float = graybox._sections[1].at.x
+	var pillars_x: float = graybox.sections[1].at.x
 	var resets := 0
 	player.input.move_x = 1.0
 	player.input.jump_held = true
@@ -35,7 +35,7 @@ func test_holding_right_and_jumping_reaches_the_pillars() -> void:
 
 
 func test_section_spawns_are_on_solid_ground() -> void:
-	for section: Dictionary in graybox._sections:
+	for section: Dictionary in graybox.sections:
 		player.respawn(section.at + Vector2(0, -4))
 		await tick(20)
 		assert_true(player.is_on_floor(), "standing at %s spawn" % section.name)
