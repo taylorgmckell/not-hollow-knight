@@ -2,7 +2,7 @@ extends Node2D
 ## F1: shows player state, velocity and feel timers, plus a trail of recent
 ## positions coloured by state so jump arcs can be compared while tuning.
 ## Forgiveness assists and bonks (ceiling hits that kill a jump) are marked
-## where they happen and counted. F3 turns assists on/off.
+## where they happen and counted. F3 turns assists on/off, F4 abilities.
 
 const TRAIL_LENGTH := 180
 const MARKER_LIFETIME := 2.0
@@ -11,6 +11,8 @@ const STATE_COLORS := {
 	&"run": Color.LIGHT_GREEN,
 	&"jump": Color.ORANGE,
 	&"fall": Color.CORNFLOWER_BLUE,
+	&"dash": Color.WHITE,
+	&"wall_slide": Color.MEDIUM_PURPLE,
 }
 const ASSIST_COLORS := {
 	&"corner": Color.MAGENTA,
@@ -49,6 +51,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_layer.visible = visible
 	elif event.is_action_pressed(&"debug_assists") and player:
 		player.assists_enabled = not player.assists_enabled
+	elif event.is_action_pressed(&"debug_abilities"):
+		GameState.set_all_abilities(not GameState.has_dash)
 
 
 func _physics_process(delta: float) -> void:
@@ -98,10 +102,15 @@ func _describe() -> String:
 		"floor   %s" % player.is_on_floor(),
 		"coyote  %.3f" % player.coyote_timer,
 		"buffer  %.3f" % player.jump_buffer_timer,
+		"air     dash %s   double %s   dash cd %.2f" % [
+			"ready" if player.air_dash_available else "used",
+			"ready" if player.double_jump_available else "used",
+			player.dash_cooldown_timer],
+		"abilities %s" % ("ON" if GameState.has_dash else "OFF"),
 		"assists %s   corner x%d   ledge x%d   bonks x%d" % [
 			"ON" if player.assists_enabled else "OFF",
 			_assist_counts[&"corner"], _assist_counts[&"ledge"], _assist_counts[&"bonk"]],
 		"",
-		"F1 overlay   F2 tuning   F3 assists   R reset",
-		"1 gaps   2 pillars   3 corner   4 ledge",
+		"F1 overlay   F2 tuning   F3 assists   F4 abilities   R reset",
+		"1 gaps   2 pillars   3 corner   4 ledge   5 dash   6 walls   7 double jump",
 	])

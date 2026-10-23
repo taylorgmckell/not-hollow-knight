@@ -31,6 +31,26 @@ extends Resource
 @export_range(1.0, 4.0, 0.05) var fall_gravity_multiplier := 1.8
 @export_range(100.0, 2000.0, 10.0, "suffix:px/s") var max_fall_speed := 640.0
 
+@export_group("Dash")
+@export_range(32.0, 400.0, 1.0, "suffix:px") var dash_distance := 176.0
+@export_range(0.05, 0.5, 0.01, "suffix:s") var dash_time := 0.2
+## Time from the end of one dash until the next can start.
+@export_range(0.0, 1.5, 0.01, "suffix:s") var dash_cooldown := 0.6
+
+@export_group("Wall")
+## Constant slide speed while clinging to a wall.
+@export_range(0.0, 400.0, 1.0, "suffix:px/s") var wall_slide_speed := 140.0
+@export_range(32.0, 320.0, 1.0, "suffix:px") var wall_jump_height := 128.0
+@export_range(50.0, 600.0, 1.0, "suffix:px/s") var wall_jump_push := 300.0
+## Horizontal input is ignored this long after a wall jump, so the kick
+## can't be cancelled straight back into the wall.
+@export_range(0.0, 0.4, 0.005, "suffix:s") var wall_jump_lock_time := 0.12
+## A wall jump still works this long after letting go of the wall.
+@export_range(0.0, 0.3, 0.005, "suffix:s") var wall_coyote_time := 0.08
+
+@export_group("Double jump")
+@export_range(16.0, 320.0, 1.0, "suffix:px") var double_jump_height := 144.0
+
 @export_group("Forgiveness")
 ## Max sideways nudge around a ceiling corner that clips the head.
 @export_range(0, 16, 1, "suffix:px") var corner_correction := 6
@@ -42,10 +62,18 @@ func gravity() -> float:
 	return 2.0 * jump_height / (time_to_apex * time_to_apex)
 
 
-## Launch speed that peaks at `jump_height` under our fixed-step integration.
+func jump_velocity() -> float:
+	return velocity_for_height(jump_height)
+
+
+func dash_speed() -> float:
+	return dash_distance / dash_time
+
+
+## Launch speed that peaks at `height` under our fixed-step integration.
 ## Continuous physics gives sqrt(2gh); stepping velocity before position loses
 ## about v·dt/2 of height per jump, so solve v²/2g - v·dt/2 = h instead.
-func jump_velocity() -> float:
+func velocity_for_height(height: float) -> float:
 	var g := gravity()
 	var half_step := g / Engine.physics_ticks_per_second / 2.0
-	return half_step + sqrt(half_step * half_step + 2.0 * g * jump_height)
+	return half_step + sqrt(half_step * half_step + 2.0 * g * height)

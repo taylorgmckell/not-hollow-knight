@@ -27,6 +27,22 @@ var coyote_timer := 0.0
 var jump_buffer_timer := 0.0
 var state_name: StringName = &""
 
+## Air moves refill on landing and when grabbing a wall.
+var air_dash_available := true
+var double_jump_available := true
+var dash_cooldown_timer := 0.0
+## Direction for the dash about to start (set by `begin_dash`).
+var dash_direction := 1
+## Which jump JumpState performs next, and which it performed last:
+## &"ground", &"wall" or &"double".
+var next_jump_kind: StringName = &"ground"
+var last_jump_kind: StringName = &"ground"
+## +1 when the last wall touched is on the left (pushes right), -1 for right.
+var wall_side := 0
+var wall_coyote_timer := 0.0
+## While positive, apply_horizontal leaves velocity.x alone (wall-jump kick).
+var horizontal_lock_timer := 0.0
+
 var _states: Dictionary[StringName, PlayerState] = {}
 var _state: PlayerState
 
@@ -39,6 +55,8 @@ func _ready() -> void:
 		&"run": RunState.new(self),
 		&"jump": JumpState.new(self),
 		&"fall": FallState.new(self),
+		&"dash": DashState.new(self),
+		&"wall_slide": WallSlideState.new(self),
 	}
 	change_state(&"fall")
 
@@ -64,6 +82,7 @@ func _physics_process(delta: float) -> void:
 		bonked.emit()
 	if is_on_floor():
 		coyote_timer = tuning.coyote_time
+		refill_air_moves()
 
 	var after := _state.post_move(delta)
 	if not after.is_empty():
@@ -87,20 +106,85 @@ func respawn(at: Vector2) -> void:
 	velocity = Vector2.ZERO
 	coyote_timer = 0.0
 	jump_buffer_timer = 0.0
+	wall_coyote_timer = 0.0
+	horizontal_lock_timer = 0.0
+	dash_cooldown_timer = 0.0
+	refill_air_moves()
 	change_state(&"fall")
 	respawned.emit(at)
 
 
+func refill_air_moves() -> void:
+	air_dash_available = true
+	double_jump_available = true
+
+
+## Ground jump: buffered press while on the floor or within coyote time.
 func wants_jump() -> bool:
 	return jump_buffer_timer > 0.0 and coyote_timer > 0.0
 
 
+func wants_wall_jump() -> bool:
+	return GameState.has_wall_jump and jump_buffer_timer > 0.0 and wall_coyote_timer > 0.0
+
+
+## Double jump fires on the press itself, never from the buffer, so a press
+## just before landing becomes a ground jump instead of wasting it.
+func wants_double_jump() -> bool:
+	return GameState.has_double_jump and input.jump_pressed and double_jump_available
+
+
+func wants_dash() -> bool:
+	return (GameState.has_dash and input.dash_pressed and dash_cooldown_timer <= 0.0
+			and (is_on_floor() or air_dash_available))
+
+
+## Air-state jump priority: coyote ground jump, then wall jump, then double jump.
+## Returns the next state, or &"" for none.
+func try_air_jump() -> StringName:
+	if wants_jump():
+		return start_jump(&"ground")
+	if wants_wall_jump():
+		return start_jump(&"wall")
+	if wants_double_jump():
+		return start_jump(&"double")
+	return &""
+
+
+func start_jump(kind: StringName) -> StringName:
+	next_jump_kind = kind
+	return &"jump"
+
+
+## Dash toward held input, else the way the player faces.
+func begin_dash(direction := 0) -> StringName:
+	if direction == 0:
+		direction = int(signf(input.move_x)) if not is_zero_approx(input.move_x) else facing
+	dash_direction = direction
+	input.dash_pressed = false
+	return &"dash"
+
+
+## Touching a wall while falling and holding toward it.
+func wants_wall_slide() -> bool:
+	if not GameState.has_wall_jump or not is_on_wall_only() or velocity.y < 0.0:
+		return false
+	var side := int(signf(get_wall_normal().x))
+	return side != 0 and int(signf(input.move_x)) == -side
+
+
+## Also eats this tick's press, so one press can't fire a second jump when
+## the new state runs later in the same tick (e.g. ground jump + double jump).
 func consume_jump() -> void:
 	jump_buffer_timer = 0.0
 	coyote_timer = 0.0
+	wall_coyote_timer = 0.0
+	input.jump_pressed = false
 
 
 func apply_horizontal(delta: float, accel_time: float, decel_time: float) -> void:
+	if horizontal_lock_timer > 0.0:
+		return
 	var target := input.move_x * tuning.run_speed
 	var has_input := not is_zero_approx(input.move_x)
 	var ramp_time := accel_time if has_input else decel_time
@@ -127,6 +211,9 @@ func _tick_timers(delta: float) -> void:
 	else:
 		jump_buffer_timer = maxf(jump_buffer_timer - delta, 0.0)
 	coyote_timer = maxf(coyote_timer - delta, 0.0)
+	wall_coyote_timer = maxf(wall_coyote_timer - delta, 0.0)
+	horizontal_lock_timer = maxf(horizontal_lock_timer - delta, 0.0)
+	dash_cooldown_timer = maxf(dash_cooldown_timer - delta, 0.0)
 
 
 ## Rising into a ceiling corner by a few pixels slides the player around it.

@@ -4,9 +4,11 @@ extends Node
 ## reviewed afterwards. Files land in user://playtests/ (on Windows:
 ## %APPDATA%\Godot\app_userdata\not-hollow-knight\playtests\).
 ##
-## Every line has: t (seconds), event, assists (on/off), pos, plus section and
-## feature when a course provides `describe(position) -> Dictionary`.
-## Events: session_start, jump, land, bonk, assist, respawn, assists_toggled,
+## Every line has: t (seconds), event, assists and abilities (on/off), pos,
+## plus section and feature when a course provides
+## `describe(position) -> Dictionary`.
+## Events: session_start, jump (with kind: ground/wall/double), dash,
+## wall_grab, land, bonk, assist, respawn, assists_toggled, abilities_toggled,
 ## tuning, session_end. Each line is flushed so a killed run keeps its data.
 
 ## Live tuning changes are logged once they settle for this long.
@@ -24,6 +26,7 @@ var _file: FileAccess
 var _start_ms := 0
 var _counts: Dictionary[String, int] = {}
 var _assists_enabled := true
+var _abilities_enabled := false
 var _tuning_changed_at := -1.0
 
 
@@ -39,6 +42,7 @@ func _ready() -> void:
 		return
 	_start_ms = Time.get_ticks_msec()
 	_assists_enabled = player.assists_enabled
+	_abilities_enabled = GameState.has_dash
 	player.bonked.connect(_record.bind("bonk"))
 	player.assisted.connect(func(kind: StringName, nudge: Vector2) -> void:
 		_record("assist", {kind = kind, nudge_px = roundi(nudge.length())}))
@@ -55,6 +59,9 @@ func _physics_process(_delta: float) -> void:
 	if player.assists_enabled != _assists_enabled:
 		_assists_enabled = player.assists_enabled
 		_record("assists_toggled")
+	if GameState.has_dash != _abilities_enabled:
+		_abilities_enabled = GameState.has_dash
+		_record("abilities_toggled")
 	if _tuning_changed_at >= 0.0 and _now() - _tuning_changed_at > TUNING_SETTLE_TIME:
 		_tuning_changed_at = -1.0
 		_record("tuning", {tuning = _tuning_snapshot()})
@@ -70,8 +77,12 @@ func _exit_tree() -> void:
 
 func _on_player_state_changed(from: StringName, to: StringName) -> void:
 	if to == &"jump":
-		_record("jump")
-	elif (from == &"jump" or from == &"fall") and (to == &"idle" or to == &"run"):
+		_record("jump", {kind = player.last_jump_kind})
+	elif to == &"dash":
+		_record("dash", {direction = player.dash_direction})
+	elif to == &"wall_slide":
+		_record("wall_grab")
+	elif from in [&"jump", &"fall", &"dash", &"wall_slide"] and (to == &"idle" or to == &"run"):
 		_record("land")
 
 
@@ -82,6 +93,7 @@ func _record(event: String, extra: Dictionary = {}) -> void:
 		t = snappedf(_now(), 0.01),
 		event = event,
 		assists = player.assists_enabled,
+		abilities = GameState.has_dash,
 		pos = [roundi(pos.x), roundi(pos.y)],
 	}
 	if course and course.has_method(&"describe"):

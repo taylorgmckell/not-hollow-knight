@@ -12,9 +12,15 @@ var _player: Player
 
 
 func _ready() -> void:
-	var peak := await _measure_peak()
+	GameState.set_all_abilities(false)
+	var peak := await _measure_peak(false)
 	var running := await _measure_running_jump(false)
 	var coyote := await _measure_running_jump(true)
+	GameState.set_all_abilities(true)
+	var double_peak := await _measure_peak(true)
+	var dash := await _measure_running_jump(true, [&"dash"])
+	var double := await _measure_running_jump(true, [&"double"])
+	var double_dash := await _measure_running_jump(true, [&"double", &"dash"])
 	var tuning := _player.tuning
 	print("| Run speed | %.0f px/s | %.1f tiles/s |" % [tuning.run_speed, tuning.run_speed / TILE])
 	print("| Full jump peak (feet) | %.1f px | %.1f |" % [peak, peak / TILE])
@@ -22,6 +28,12 @@ func _ready() -> void:
 	print("| Running jump, edge to edge | %.0f px | %.1f |" % [running.x, running.x / TILE])
 	print("| Running jump with late coyote jump | %.0f px | %.1f |" % [coyote.x, coyote.x / TILE])
 	print("| Airtime, full running jump | %d ticks | %.2f s |" % [running.y, running.y / 60.0])
+	print("| Dash distance | %.0f px | %.1f |" % [tuning.dash_distance, tuning.dash_distance / TILE])
+	print("| Peak with double jump at the apex | %.1f px | %.1f |" % [double_peak, double_peak / TILE])
+	print("| Highest pillar with double jump | %d px | %d |" % [floori(double_peak / TILE) * TILE, floori(double_peak / TILE)])
+	print("| Gap: coyote jump + dash at apex | %.0f px | %.1f |" % [dash.x, dash.x / TILE])
+	print("| Gap: coyote jump + double jump at apex | %.0f px | %.1f |" % [double.x, double.x / TILE])
+	print("| Gap: coyote jump + double jump + dash | %.0f px | %.1f |" % [double_dash.x, double_dash.x / TILE])
 	get_tree().quit()
 
 
@@ -46,15 +58,19 @@ func _reset(floor_rect: Rect2, at: Vector2) -> void:
 		await get_tree().physics_frame
 
 
-func _measure_peak() -> float:
+func _measure_peak(double_jump: bool) -> float:
 	await _reset(Rect2(-2000, 0, 4000, 64), Vector2(0, -2))
 	var start_y := _player.global_position.y
 	var peak_y := start_y
 	_player.input.jump_pressed = true
 	_player.input.jump_held = true
+	var extras: Array[StringName] = []
+	if double_jump:
+		extras.append(&"double")
 	for i: int in 240:
 		await get_tree().physics_frame
 		_player.input.jump_pressed = false
+		_press_at_apex(extras)
 		peak_y = minf(peak_y, _player.global_position.y)
 		if i > 2 and _player.is_on_floor():
 			break
@@ -63,8 +79,9 @@ func _measure_peak() -> float:
 
 ## Floor ends at x = 0. Returns (widest gap cleared in px, airtime in ticks).
 ## Without coyote, jumps on the last tick still over the floor; with coyote,
-## on the last tick coyote time allows.
-func _measure_running_jump(use_coyote: bool) -> Vector2:
+## on the last tick coyote time allows. `extras` (&"double", &"dash") are
+## pressed in order, each at the next apex.
+func _measure_running_jump(use_coyote: bool, extras: Array[StringName] = []) -> Vector2:
 	await _reset(Rect2(-3000, 0, 3000, 64), Vector2(-800, -2))
 	_player.input.move_x = 1.0
 	var start_y := _player.global_position.y
@@ -85,9 +102,24 @@ func _measure_running_jump(use_coyote: bool) -> Vector2:
 				jumped = true
 		await get_tree().physics_frame
 		_player.input.jump_pressed = false
+		_player.input.dash_pressed = false
 		if jumped:
+			_press_at_apex(extras)
 			airtime += 1
 			if airtime > 2 and _player.global_position.y >= start_y:
 				break
 	# A platform starting anywhere under the right edge would have caught us.
 	return Vector2(_player.global_position.x + HALF_WIDTH, airtime)
+
+
+## Presses the next queued extra move once the player stops rising.
+## Consumes it from `extras`.
+func _press_at_apex(extras: Array[StringName]) -> void:
+	if extras.is_empty() or _player.velocity.y < 0.0 or _player.state_name == &"dash":
+		return
+	match extras.pop_front():
+		&"double":
+			_player.input.jump_pressed = true
+			_player.input.jump_held = true
+		&"dash":
+			_player.input.dash_pressed = true

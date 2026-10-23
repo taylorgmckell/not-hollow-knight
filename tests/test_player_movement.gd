@@ -21,18 +21,6 @@ func before_each() -> void:
 	await tick()
 
 
-## Adds a solid block given in pixels.
-func add_block(rect: Rect2) -> void:
-	var body := StaticBody2D.new()
-	var shape := CollisionShape2D.new()
-	var box := RectangleShape2D.new()
-	box.size = rect.size
-	shape.shape = box
-	body.position = rect.get_center()
-	body.add_child(shape)
-	add_child(body)
-
-
 func settle_on_floor(at := Vector2.ZERO) -> void:
 	player.global_position = at + Vector2(0, -2)
 	await tick(10)

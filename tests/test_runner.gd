@@ -4,6 +4,7 @@ extends Node
 
 const SUITES: Array[Script] = [
 	preload("res://tests/test_player_movement.gd"),
+	preload("res://tests/test_player_abilities.gd"),
 	preload("res://tests/test_graybox.gd"),
 	preload("res://tests/test_playtest_log.gd"),
 ]
@@ -18,6 +19,8 @@ func _ready() -> void:
 			var test_name: String = method.name
 			if not test_name.begins_with("test_"):
 				continue
+			# Abilities start locked in every test; suites unlock what they need.
+			GameState.set_all_abilities(false)
 			var suite: TestCase = suite_script.new()
 			add_child(suite)
 			await suite.before_each()

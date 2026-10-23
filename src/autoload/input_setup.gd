@@ -16,11 +16,15 @@ const KEYS := {
 	&"debug_overlay": [KEY_F1],
 	&"debug_tuning": [KEY_F2],
 	&"debug_assists": [KEY_F3],
+	&"debug_abilities": [KEY_F4],
 	&"debug_reset": [KEY_R],
 	&"debug_section_1": [KEY_1],
 	&"debug_section_2": [KEY_2],
 	&"debug_section_3": [KEY_3],
 	&"debug_section_4": [KEY_4],
+	&"debug_section_5": [KEY_5],
+	&"debug_section_6": [KEY_6],
+	&"debug_section_7": [KEY_7],
 }
 
 const JOY_BUTTONS := {

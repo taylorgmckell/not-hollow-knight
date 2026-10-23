@@ -23,6 +23,18 @@ func tick(count := 1) -> void:
 		await get_tree().physics_frame
 
 
+## Adds a solid block given in pixels.
+func add_block(rect: Rect2) -> void:
+	var body := StaticBody2D.new()
+	var shape := CollisionShape2D.new()
+	var box := RectangleShape2D.new()
+	box.size = rect.size
+	shape.shape = box
+	body.position = rect.get_center()
+	body.add_child(shape)
+	add_child(body)
+
+
 func assert_true(condition: bool, message: String) -> void:
 	if not condition:
 		failures.append(message)

@@ -7,10 +7,14 @@ Level design should rely on these numbers. **Re-measure whenever tuning changes:
 godot --headless --fixed-fps 60 res://tests/measure_reach.tscn
 ```
 
-It prints the first six rows of the table below. One tile = 32 px. The
-player's collision box is 20 × 40 px.
+It prints every row of the tables below except coyote time and jump buffer,
+which are tuning values. One tile = 32 px. The player's collision box is
+20 × 40 px.
 
-Last measured 2026-10-22, `jump_height` = 176 (tuned in playtest), other values default.
+Last measured 2026-10-23, `jump_height` = 176, `double_jump_height` = 168 and
+`corner_correction` = 16 (all tuned in playtest), other values default.
+
+## Base movement (no abilities)
 
 | Metric | Value | Tiles |
 |---|---|---|
@@ -23,23 +27,57 @@ Last measured 2026-10-22, `jump_height` = 176 (tuned in playtest), other values 
 | Coyote time | 0.09 s | ~5 ticks |
 | Jump buffer | 0.12 s | ~7 ticks |
 
+## With abilities (M2)
+
+| Metric | Value | Tiles |
+|---|---|---|
+| Dash distance (0.2 s, cooldown 0.6 s) | 176 px | 5.5 |
+| Peak with double jump at the apex | 345.1 px | 10.8 |
+| Highest pillar with double jump | 320 px | 10 (press up to ~0.1 s before the apex) |
+| Gap: coyote jump + dash at apex | 448 px | 14.0 |
+| Gap: coyote jump + double jump at apex | 458 px | 14.3 |
+| Gap: coyote jump + double jump + dash | 639 px | 20.0 |
+| Wall slide speed | 140 px/s | 4.4 tiles/s |
+| Wall jump | 128 px up, 300 px/s kick, input locked 0.12 s | 4 up |
+
+Wall jumping climbs a 4-tile-wide shaft and also a single wall (tested
+headless). Grabbing a wall refills the air dash and double jump.
+
+Double jump *replaces* upward speed, so pressing before the apex loses the
+rest of the first jump's rise. Playtesters pressed about 0.1 s early (129–168 px
+up); at the original 144 px double jump their best reached 311 px, 9 px short
+of h10. At 168 px a press from 152 px up clears h10 (guarded by a test).
+
 ## Design rules that follow
 
 - **Gaps:** up to 7 tiles is comfortable, 8 is an expert-only coyote jump
-  (jump just after running off the edge), 9+ needs an ability (dash, double jump).
+  (jump just after running off the edge), 9+ needs an ability. With dash,
+  up to 12 is comfortable and 14 is a perfect-timing jump; 15+ needs double
+  jump and dash together (up to ~20).
 - **Heights:** up to 5 tiles reachable from flat ground; 6+ needs an ability
-  or a stepping stone.
+  or a stepping stone. Double jump reaches 10 with normal timing; 11 is out of reach.
+  Wall jump has no height limit while there's a wall.
 - **Ceilings:** a 3-tile-high corridor (96 px) lets the player jump without
   always bonking; under 2 tiles makes jumping feel cramped.
+- **Gating:** a gap of 9–14 tiles or a ledge of 6–10 tiles gates on dash or
+  double jump respectively; a tall shaft gates on wall jump.
 
 ## Assists (forgiveness)
 
 | Assist | Limit | Graybox section |
 |---|---|---|
-| Corner correction | 6 px sideways | `corner`: an overhang to jump out from under, and a floating platform to jump onto from close. Forgives about 1 frame of mistimed running jump (headless sweep: 4 of 31 overhang timings that bonk without it clear with it) |
+| Corner correction | 16 px sideways (default 6) | `corner`: an overhang to jump out from under, and a floating platform to jump onto from close. Headless sweep of 31 overhang timings: 20 bonk without the assist, 16 with it at 6 px, 2 with it at 16 px |
 | Ledge forgiveness | 6 px upward | `ledge`: top 3 px above the jump peak (`jump_height` + half the limit), reachable only with the assist |
 
-In the graybox, press **F1** to see assists marked where they fire (magenta =
-corner, yellow = ledge) with a running count, and **F3** to switch them off
-and compare. Keys **1–4** jump to the gaps, pillars, corner and ledge sections;
-**R** returns to the last one. Missed gaps drop into a 2-tile pit you can climb out of.
+## Graybox controls
+
+| Key | Action |
+|---|---|
+| F1 | Overlay: state, timers, air moves, trail; assists (magenta corner, yellow ledge) and bonks (red) marked and counted |
+| F2 | Live tuning panel; Save writes `player_tuning.tres` |
+| F3 | Assists on/off |
+| F4 | Abilities on/off (all start unlocked in the graybox) |
+| 1–7 | Jump to gaps, pillars, corner, ledge, dash, walls, double jump |
+| R | Return to the last section |
+
+Missed gaps drop into a 2-tile pit you can climb out of.

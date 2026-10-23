@@ -16,16 +16,22 @@ const PIT_DEPTH := 2
 const FEATURE_RADIUS := 6.0
 const SECTION_ACTIONS: Array[StringName] = [
 	&"debug_section_1", &"debug_section_2", &"debug_section_3", &"debug_section_4",
+	&"debug_section_5", &"debug_section_6", &"debug_section_7",
 ]
 
 ## Course blocks in tile units (fractions allowed). Built in _ready.
 var _blocks: Array[Rect2] = []
 var _labels: Array[Dictionary] = []
-## Each: {name, at}. Keys 1-4 jump to them; R and falling out return to the last one.
+## Each: {name, at}. Keys 1-7 jump to them; R and falling out return to the last one.
 var _sections: Array[Dictionary] = []
 var _spawn_point := Vector2.ZERO
 
 @onready var _player: Player = $Player
+
+
+func _enter_tree() -> void:
+	# Before children's _ready, so the playtest log starts with abilities on.
+	GameState.set_all_abilities(true)
 
 
 func _ready() -> void:
@@ -64,13 +70,7 @@ func _build_course() -> void:
 	# Gaps: 2..9 tiles. Current reach for each is in docs/metrics.md. They are
 	# shallow pits, so missing one costs a climb out, not the run.
 	_add_section("gaps", 3)
-	var gaps_start := x
-	for gap: int in range(2, 10):
-		_label(x + gap / 2.0, GROUND_ROW - 1, "gap %d" % gap)
-		x += gap
-		_blocks.append(Rect2(x, GROUND_ROW, 5, 4))
-		x += 5
-	_blocks.append(Rect2(gaps_start, GROUND_ROW + PIT_DEPTH, x - gaps_start, 4 - PIT_DEPTH))
+	x = _add_gap_run(x, range(2, 10), "gap")
 
 	# Pillars: 1..5 tiles tall on continuous ground.
 	_add_section("pillars", x + 1)
@@ -106,8 +106,52 @@ func _build_course() -> void:
 
 	_blocks.append(Rect2(ground_start, GROUND_ROW, x + 6 - ground_start, 4))
 	x += 6
-	# Right wall.
-	_blocks.append(Rect2(x, 0, 2, GROUND_ROW + 4))
+
+	# --- M2 abilities (all unlocked in the graybox; F4 toggles them) ---
+
+	# Dash gaps: wider than any plain jump. Jump, then dash at the top.
+	_add_section("dash", x - 3)
+	x = _add_gap_run(x, [10, 12, 14, 16], "dash gap")
+
+	# Wall shaft: two walls 4 tiles apart, 12 tall. Walk in under the left
+	# wall, climb by wall jumping side to side, then step onto the right wall.
+	ground_start = x
+	x += 6
+	_add_section("walls", x - 3)
+	_blocks.append(Rect2(x, GROUND_ROW - 12, 2, 10))
+	_blocks.append(Rect2(x + 6, GROUND_ROW - 12, 2, 12))
+	_label(x + 4, GROUND_ROW - 13, "shaft: wall jump up")
+	x += 8 + 6
+	# Single wall: climbing it needs repeated jumps off the same face.
+	_blocks.append(Rect2(x, GROUND_ROW - 10, 3, 10))
+	_label(x + 1.5, GROUND_ROW - 11, "single wall")
+	x += 3 + 6
+
+	# Double jump pillars: past what one jump reaches.
+	_add_section("double jump", x - 2)
+	for height: int in range(7, 12):
+		x += 4
+		_blocks.append(Rect2(x, GROUND_ROW - height, 3, height))
+		_label(x + 1.5, GROUND_ROW - height - 1, "h %d" % height)
+		x += 3
+	x += 6
+	_blocks.append(Rect2(ground_start, GROUND_ROW, x - ground_start, 4))
+
+	# Right wall, tall enough to hold in the abilities area.
+	_blocks.append(Rect2(x, GROUND_ROW - 16, 2, 20))
+
+
+## Platforms separated by labelled gaps, over one shallow pit. Missing a gap
+## costs a climb out, not the run. Returns the x after the last platform.
+func _add_gap_run(x: float, gaps: Array, label_prefix: String) -> float:
+	var start := x
+	for gap: int in gaps:
+		_label(x + gap / 2.0, GROUND_ROW - 1, "%s %d" % [label_prefix, gap])
+		x += gap
+		_blocks.append(Rect2(x, GROUND_ROW, 5, 4))
+		x += 5
+	_blocks.append(Rect2(start, GROUND_ROW + PIT_DEPTH, x - start, 4 - PIT_DEPTH))
+	return x
 
 
 ## Tags a position for the playtest log: {section, feature, in_pit}. The

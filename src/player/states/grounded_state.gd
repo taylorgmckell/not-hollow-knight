@@ -5,7 +5,9 @@ extends PlayerState
 
 func physics_update(delta: float) -> StringName:
 	if player.wants_jump():
-		return &"jump"
+		return player.start_jump(&"ground")
+	if player.wants_dash():
+		return player.begin_dash()
 	var t := player.tuning
 	player.apply_horizontal(delta, t.ground_accel_time, t.ground_decel_time)
 	player.apply_gravity(delta)
