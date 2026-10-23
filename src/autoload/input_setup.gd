@@ -36,11 +36,12 @@ const JOY_BUTTONS := {
 	&"move_down": [JOY_BUTTON_DPAD_DOWN],
 	&"jump": [JOY_BUTTON_A],
 	&"attack": [JOY_BUTTON_X],
-	&"dash": [JOY_BUTTON_RIGHT_SHOULDER],
 }
 
-## action -> [axis, direction]
+## action -> [axis, direction]. Triggers (R2 = JOY_AXIS_TRIGGER_RIGHT) count
+## as pressed past the action deadzone, like the stick directions.
 const JOY_AXES := {
+	&"dash": [JOY_AXIS_TRIGGER_RIGHT, 1.0],
 	&"move_left": [JOY_AXIS_LEFT_X, -1.0],
 	&"move_right": [JOY_AXIS_LEFT_X, 1.0],
 	&"move_up": [JOY_AXIS_LEFT_Y, -1.0],
