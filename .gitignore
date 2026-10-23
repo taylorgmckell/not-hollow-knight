@@ -1,0 +1,11 @@
+# Godot 4 cache and editor state
+.godot/
+/android/
+
+# Exports
+/build/
+*.pck
+
+# OS
+.DS_Store
+Thumbs.db

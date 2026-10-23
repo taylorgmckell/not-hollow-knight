@@ -1,0 +1,31 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/world/graybox/graybox.gd" id="1_graybox"]
+[ext_resource type="PackedScene" path="res://src/player/player.tscn" id="2_player"]
+[ext_resource type="Script" path="res://src/camera/game_camera.gd" id="3_camera"]
+[ext_resource type="Script" path="res://src/debug/debug_overlay.gd" id="4_overlay"]
+[ext_resource type="Script" path="res://src/debug/tuning_panel.gd" id="5_tuning"]
+[ext_resource type="Script" path="res://src/debug/playtest_log.gd" id="6_log"]
+
+[node name="Graybox" type="Node2D"]
+script = ExtResource("1_graybox")
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+
+[node name="GameCamera" type="Camera2D" parent="." node_paths=PackedStringArray("target")]
+zoom = Vector2(1.5, 1.5)
+script = ExtResource("3_camera")
+target = NodePath("../Player")
+
+[node name="DebugOverlay" type="Node2D" parent="." node_paths=PackedStringArray("player")]
+script = ExtResource("4_overlay")
+player = NodePath("../Player")
+
+[node name="TuningPanel" type="CanvasLayer" parent="." node_paths=PackedStringArray("player")]
+script = ExtResource("5_tuning")
+player = NodePath("../Player")
+
+[node name="PlaytestLog" type="Node" parent="." node_paths=PackedStringArray("player", "course")]
+script = ExtResource("6_log")
+player = NodePath("../Player")
+course = NodePath("..")
