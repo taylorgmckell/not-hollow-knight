@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://src/player/player.gd" id="1_player"]
 [ext_resource type="Resource" path="res://src/player/player_tuning.tres" id="2_tuning"]
 [ext_resource type="Script" path="res://src/player/player_visual.gd" id="3_visual"]
+[ext_resource type="Script" path="res://src/preview/player_skin.gd" id="4_skin"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
 size = Vector2(20, 40)
@@ -27,3 +28,6 @@ polygon = PackedVector2Array(-10, -40, 10, -40, 10, 0, -10, 0)
 [node name="Eye" type="Polygon2D" parent="Visual"]
 color = Color(0.1, 0.1, 0.15, 1)
 polygon = PackedVector2Array(3, -34, 8, -34, 8, -28, 3, -28)
+
+[node name="Skin" type="Node2D" parent="."]
+script = ExtResource("4_skin")

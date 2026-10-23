@@ -39,3 +39,20 @@ func test_section_spawns_are_on_solid_ground() -> void:
 		player.respawn(section.at + Vector2(0, -4))
 		await tick(20)
 		assert_true(player.is_on_floor(), "standing at %s spawn" % section.name)
+
+
+func test_preview_art_toggle_is_visual_only() -> void:
+	var skin: CourseSkin = graybox.get_node("CourseSkin")
+	var colliders_before := graybox.get_children().filter(func(n: Node) -> bool: return n is StaticBody2D).size()
+	var was_enabled := PreviewArt.enabled
+	for enabled: bool in [true, false, true]:
+		PreviewArt.enabled = enabled
+		PreviewArt.changed.emit(enabled)
+		await tick(2)
+		assert_eq(skin.visible, enabled, "course skin follows the toggle")
+		assert_eq(player.get_node("Skin").visible, enabled, "player sprite follows the toggle")
+		assert_eq(player.get_node("Visual").visible, not enabled, "placeholder is the opposite")
+	var colliders_after := graybox.get_children().filter(func(n: Node) -> bool: return n is StaticBody2D).size()
+	assert_eq(colliders_after, colliders_before, "collision untouched")
+	PreviewArt.enabled = was_enabled
+	PreviewArt.changed.emit(was_enabled)

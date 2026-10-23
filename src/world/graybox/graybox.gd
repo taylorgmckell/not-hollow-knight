@@ -29,7 +29,7 @@ func _on_section_key(index: int) -> void:
 
 func controls_hint() -> String:
 	return "\n".join([
-		"F1 overlay   F2 tuning   F3 assists   F4 abilities   F6 challenge   R reset",
+		"F1 overlay   F2 tuning   F3 assists   F4 abilities   F6 challenge   F7 art   R reset",
 		"1 gaps   2 pillars   3 corner   4 ledge   5 dash   6 walls   7 double jump",
 	])
 

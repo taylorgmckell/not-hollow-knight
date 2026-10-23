@@ -4,7 +4,8 @@ extends Node2D
 ## colliders, labels, spike hazards, named sections and switching courses (F6).
 ##
 ## Subclasses fill the course in `build()` and react in `_course_physics()`.
-## The scene must have a `Player` child.
+## The scene must have a `Player` child. With preview art on (F7) a CourseSkin
+## child draws the blocks instead of the grey boxes; collision is identical.
 
 const TILE := 32
 const GROUND_ROW := 10
@@ -42,6 +43,7 @@ func _ready() -> void:
 	build()
 	for rect: Rect2 in blocks:
 		_add_collider(rect)
+	add_child(CourseSkin.new(self))
 	queue_redraw()
 	_course_ready()
 
@@ -57,10 +59,11 @@ func _physics_process(delta: float) -> void:
 
 
 func _draw() -> void:
-	for rect: Rect2 in blocks:
-		draw_rect(Rect2(rect.position * TILE, rect.size * TILE), BLOCK_COLOR)
-	for rect: Rect2 in hazards:
-		_draw_spikes(Rect2(rect.position * TILE, rect.size * TILE))
+	if not PreviewArt.enabled:
+		for rect: Rect2 in blocks:
+			draw_rect(Rect2(rect.position * TILE, rect.size * TILE), BLOCK_COLOR)
+		for rect: Rect2 in hazards:
+			_draw_spikes(Rect2(rect.position * TILE, rect.size * TILE))
 	var font := ThemeDB.fallback_font
 	for label: Dictionary in labels:
 		draw_string(font, label.at, label.text, HORIZONTAL_ALIGNMENT_CENTER, LABEL_WIDTH, 18, LABEL_COLOR)
