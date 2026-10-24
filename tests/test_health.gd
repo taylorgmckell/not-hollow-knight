@@ -255,6 +255,46 @@ func test_hit_interrupts_focus() -> void:
 	assert_true(health.soul < tuning.focus_cost, "the drained Soul is lost (soul %d)" % health.soul)
 
 
+## Playtest finding: after a focus stopped part-way, its glow stayed on
+## screen until the next heal.
+func test_released_focus_clears_its_glow() -> void:
+	await settle_on_floor()
+	health.masks = health.max_masks() - 1
+	health.soul = tuning.focus_cost
+	var fx: HealFx = player.get_node("HealFx")
+	player.input.focus_pressed = true
+	player.input.focus_held = true
+	await tick()
+	player.input.focus_pressed = false
+	await tick(ticks(tuning.tap_threshold + tuning.focus_time / 2.0))
+	await get_tree().process_frame
+	assert_true(fx.showing, "glow showing mid-focus")
+	player.input.focus_held = false
+	await tick(5)
+	await get_tree().process_frame
+	assert_true(not fx.showing, "glow gone after letting go")
+
+
+func test_hit_focus_clears_its_glow() -> void:
+	tuning.hurt_knockback_y = 0.0
+	await settle_on_floor()
+	health.masks = health.max_masks() - 1
+	health.soul = tuning.focus_cost
+	var fx: HealFx = player.get_node("HealFx")
+	player.input.focus_pressed = true
+	player.input.focus_held = true
+	await tick()
+	player.input.focus_pressed = false
+	await tick(ticks(tuning.tap_threshold + tuning.focus_time / 2.0))
+	add_child(ContactDamage.make_rect(Vector2(60, 60), Vector2(0, -20)))
+	await tick(5)
+	player.input.focus_held = false
+	await tick(5)
+	await get_tree().process_frame
+	assert_eq(player.state_name != &"focus", true, "focus ended by the hit")
+	assert_true(not fx.showing, "glow gone after the hit")
+
+
 # --- Spell ---
 
 func test_tap_casts_a_bolt_that_pierces_and_stops_at_walls() -> void:

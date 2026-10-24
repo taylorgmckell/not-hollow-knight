@@ -15,6 +15,8 @@ const CENTER := Vector2(0, -22)
 
 ## Seconds since the last heal landed; INF when none is playing.
 var burst_age := INF
+## Whether the most recent draw put anything on screen.
+var showing := false
 
 @onready var _player: Player = get_parent()
 # Looked up directly: children are ready before the player sets its own @onready vars.
@@ -35,11 +37,14 @@ func is_bursting() -> bool:
 func _process(delta: float) -> void:
 	if is_bursting():
 		burst_age += delta
-	if is_bursting() or _player.state_name == &"focus":
+	# Also redraw once after the effect ends, or its last frame (e.g. the glow
+	# of a focus that was let go or hit) stays frozen on screen.
+	if is_bursting() or _player.state_name == &"focus" or showing:
 		queue_redraw()
 
 
 func _draw() -> void:
+	showing = _player.state_name == &"focus" or is_bursting()
 	var progress := _health.focus_progress
 	if _player.state_name == &"focus":
 		_draw_gathering(progress)
