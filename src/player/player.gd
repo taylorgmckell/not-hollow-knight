@@ -53,6 +53,7 @@ var _states: Dictionary[StringName, PlayerState] = {}
 var _state: PlayerState
 
 @onready var nail: NailAttack = $Nail
+@onready var health: PlayerHealth = $Health
 
 
 func _ready() -> void:
@@ -65,6 +66,8 @@ func _ready() -> void:
 		&"fall": FallState.new(self),
 		&"dash": DashState.new(self),
 		&"wall_slide": WallSlideState.new(self),
+		&"hurt": HurtState.new(self),
+		&"focus": FocusState.new(self),
 	}
 	change_state(&"fall")
 
@@ -73,6 +76,7 @@ func _physics_process(delta: float) -> void:
 	if not external_input:
 		input.read_from_devices()
 	_tick_timers(delta)
+	health.pre_update(delta)
 
 	# Let each newly entered state compute this tick's velocity too.
 	for i: int in MAX_TRANSITIONS_PER_TICK:
@@ -102,6 +106,7 @@ func _physics_process(delta: float) -> void:
 		change_state(after)
 
 	nail.physics_update(delta)
+	health.post_update(delta)
 
 
 func change_state(next: StringName) -> void:
@@ -129,8 +134,27 @@ func respawn(at: Vector2) -> void:
 	nail.cooldown_timer = 0.0
 	nail.active_timer = 0.0
 	nail.buffer_timer = 0.0
+	health.cancel_input()
 	change_state(&"fall")
 	respawned.emit(at)
+
+
+## Takes damage from something at `from`: knocked away from it and stunned
+## briefly. Returns false if the hit didn't land (invulnerable or dead).
+func hurt(amount: int, from: Vector2) -> bool:
+	if not health.damage(amount, from):
+		return false
+	var away := signf(global_position.x - from.x)
+	if is_zero_approx(away):
+		away = -facing
+	velocity = Vector2(away * tuning.hurt_knockback_x, -tuning.hurt_knockback_y)
+	if not health.is_dead():
+		change_state(&"hurt")
+	return true
+
+
+func can_attack() -> bool:
+	return not (state_name in [&"dash", &"hurt", &"focus"]) and not health.is_dead()
 
 
 ## Down-slash bounce: a fixed-height jump that also refreshes air moves and

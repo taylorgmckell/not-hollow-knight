@@ -151,3 +151,14 @@ func test_late_pogo_off_spikes_is_not_a_death() -> void:
 	assert_true(feet_at_hit[0] > spike_top, "the slash connected with the body already in the spikes (feet %.1f, spikes %.1f)" % [feet_at_hit[0], spike_top])
 	assert_eq(player.last_jump_kind, &"pogo", "bounced")
 	assert_eq(course.deaths, 0, "a pogo that connects isn't a death")
+
+
+func test_death_restores_health() -> void:
+	player.health.masks = 2
+	player.respawn(Vector2(14 * BlockCourse.TILE, 0))
+	for i: int in 120:
+		await tick()
+		if course.deaths > 0:
+			break
+	assert_eq(course.deaths, 1, "fell in a pit")
+	assert_eq(player.health.masks, player.health.max_masks(), "full masks at the checkpoint")

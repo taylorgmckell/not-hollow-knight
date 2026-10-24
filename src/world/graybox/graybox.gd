@@ -4,8 +4,9 @@ extends BlockCourse
 ## Gaps and pillar heights step up one tile at a time so jump reach can be read
 ## straight off the labels. Measured reach is recorded in docs/metrics.md.
 ## Failing is cheap here on purpose: impossible gaps drop into climb-out pits,
-## and spikes just send you back to the section start. The challenge course
-## (F6) is where deaths count.
+## and spikes cost a mask and put you back on the last safe ground (as in
+## Hollow Knight). Running out of masks restarts the section. The challenge
+## course (F6) is where deaths count.
 
 ## Depth of the pits under the gaps, in tiles. Shallow enough to jump out of.
 const PIT_DEPTH := 2
@@ -19,21 +20,38 @@ func _course_ready() -> void:
 
 
 func _course_physics(_delta: float) -> void:
-	if (player.global_position.y > KILL_Y or touching_hazard()
-			or Input.is_action_just_pressed(&"debug_reset")):
-		player.respawn(_spawn_point)
+	if player.global_position.y > KILL_Y or Input.is_action_just_pressed(&"debug_reset"):
+		_restart_section()
+	elif touching_hazard():
+		var fatal := player.health.masks <= 1
+		player.health.damage(1, player.global_position, true)
+		# A fatal hit restarts the section through _on_player_died instead.
+		if not fatal:
+			player.respawn(safe_point)
 
 
 func _on_section_key(index: int) -> void:
 	_spawn_point = sections[index].at
+	_restart_section()
+
+
+func _on_player_died() -> void:
+	player.health.restore(true)
 	player.respawn(_spawn_point)
+	safe_point = _spawn_point
+
+
+func _restart_section() -> void:
+	player.health.restore(false)
+	player.respawn(_spawn_point)
+	safe_point = _spawn_point
 
 
 func controls_hint() -> String:
 	return "\n".join([
 		"F1 overlay   F2 tuning   F3 assists   F4 abilities   F6 challenge   F7/touchpad art   R/Options reset",
-		"1 gaps  2 pillars  3 corner  4 ledge  5 dash  6 walls  7 double jump  8 combat",
-		"X/Square attack (hold up or down to aim)",
+		"1 gaps  2 pillars  3 corner  4 ledge  5 dash  6 walls  7 double jump  8 combat  9 health",
+		"X/Square attack (hold up or down to aim)   F/Circle: tap = spell, hold = heal",
 	])
 
 
@@ -140,6 +158,24 @@ func build() -> void:
 	x += 20
 	ground_start = x
 	x += 10
+
+	# --- M4 health and Soul ---
+
+	# A plain dummy to fill Soul from, and a thorny one that hurts on touch.
+	add_section("health", x - 3)
+	add_dummy(x + 3, GROUND_ROW)
+	add_dummy(x + 7, GROUND_ROW, false, true)
+	add_label(x + 5, GROUND_ROW - 3, "soul / thorny")
+	x += 11
+	# Spikes on flat ground: lose a mask, back to the last safe ground.
+	add_hazard(Rect2(x, GROUND_ROW - 0.5, 3, 0.5))
+	add_label(x + 1.5, GROUND_ROW - 3, "spikes: -1 mask")
+	x += 7
+	# Dart lane behind a low wall: darts every 2 s at body height. Heal between them.
+	add_block(Rect2(x, GROUND_ROW - 2, 1, 2))
+	add_turret(x + 15, GROUND_ROW - 1, -1, 2.0)
+	add_label(x + 8, GROUND_ROW - 4, "darts: heal between")
+	x += 16
 	add_block(Rect2(ground_start, GROUND_ROW, x - ground_start, 4))
 
 	# Right wall, tall enough to hold in the abilities area.

@@ -6,6 +6,8 @@ extends Node2D
 ##   comes back after a moment. Pogo-able.
 ## - Lantern (`lantern = true`): floating, invulnerable, pogo-only. For pogo
 ##   chains over spikes.
+## - Thorny (`harmful = true`): a dummy that hurts on touch, for practising
+##   taking hits (knockback, invulnerability) and healing.
 
 signal damaged(info: DamageInfo)
 signal broke
@@ -18,15 +20,19 @@ const WOBBLE_DECAY := 60.0
 const BODY_COLOR := Color(0.62, 0.52, 0.38)
 const LANTERN_COLOR := Color(0.95, 0.82, 0.45)
 const OUTLINE := Color(0.1, 0.1, 0.12)
+const THORN_COLOR := Color(0.92, 0.42, 0.42)
 ## Preview-art tiles: a critter for dummies, a ring for lanterns.
 const DUMMY_TILE := Vector2i(0, 12)
 const LANTERN_TILE := Vector2i(2, 0)
 
 @export var lantern := false
+@export var harmful := false
 @export var max_hp := 5
 
 var hp := 5
 var hurtbox: Hurtbox
+## Thorns of a harmful dummy; null otherwise.
+var thorns: ContactDamage
 var _flash := 0.0
 var _wobble := Vector2.ZERO
 var _broken_for := 0.0
@@ -43,6 +49,9 @@ func _ready() -> void:
 		hurtbox = Hurtbox.make_rect(DUMMY_SIZE, Vector2(0, -DUMMY_SIZE.y / 2.0), true, true)
 		hurtbox.hurt.connect(_on_hurt)
 	add_child(hurtbox)
+	if harmful:
+		thorns = ContactDamage.make_rect(DUMMY_SIZE, Vector2(0, -DUMMY_SIZE.y / 2.0))
+		add_child(thorns)
 	PreviewArt.changed.connect(func(_enabled: bool) -> void: queue_redraw())
 
 
@@ -52,6 +61,8 @@ func _process(delta: float) -> void:
 		if _broken_for <= 0.0:
 			hp = max_hp
 			hurtbox.enabled = true
+			if thorns:
+				thorns.enabled = true
 		queue_redraw()
 		return
 	if _flash > 0.0 or _wobble != Vector2.ZERO:
@@ -74,6 +85,9 @@ func _on_hurt(info: DamageInfo) -> void:
 	if hp <= 0:
 		_broken_for = RESPAWN_TIME
 		hurtbox.enabled = false
+		# Gone means gone: a broken thorny dummy can't hurt either (playtest finding).
+		if thorns:
+			thorns.enabled = false
 		# A kill gets a slightly longer freeze than a normal hit.
 		HitStop.freeze(0.08)
 		broke.emit()
@@ -99,6 +113,14 @@ func _draw() -> void:
 	else:
 		draw_rect(rect, Color.WHITE if flash else (LANTERN_COLOR if lantern else BODY_COLOR))
 		draw_rect(rect, OUTLINE, false, 2.0)
+	if harmful:
+		# Thorns around the body.
+		for i: int in 4:
+			var y := rect.position.y + 6.0 + i * 10.0
+			for side: float in [-1.0, 1.0]:
+				var base_x := rect.get_center().x + side * size.x / 2.0
+				draw_colored_polygon(PackedVector2Array([
+					Vector2(base_x, y - 3), Vector2(base_x + side * 7.0, y), Vector2(base_x, y + 3)]), THORN_COLOR)
 	if not lantern:
 		# HP pips above the head.
 		for i: int in max_hp:

@@ -13,6 +13,7 @@ const KEYS := {
 	&"jump": [KEY_Z, KEY_SPACE],
 	&"attack": [KEY_X, KEY_J],
 	&"dash": [KEY_C, KEY_K],
+	&"focus": [KEY_F, KEY_L],
 	&"debug_overlay": [KEY_F1],
 	&"debug_tuning": [KEY_F2],
 	&"debug_assists": [KEY_F3],
@@ -28,6 +29,7 @@ const KEYS := {
 	&"debug_section_6": [KEY_6],
 	&"debug_section_7": [KEY_7],
 	&"debug_section_8": [KEY_8],
+	&"debug_section_9": [KEY_9],
 }
 
 const JOY_BUTTONS := {
@@ -37,6 +39,7 @@ const JOY_BUTTONS := {
 	&"move_down": [JOY_BUTTON_DPAD_DOWN],
 	&"jump": [JOY_BUTTON_A],
 	&"attack": [JOY_BUTTON_X],
+	&"focus": [JOY_BUTTON_B],
 	# PS5: Options and the touchpad click, so a run never needs the keyboard.
 	&"debug_reset": [JOY_BUTTON_START],
 	&"debug_preview_art": [JOY_BUTTON_TOUCHPAD],

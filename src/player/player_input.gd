@@ -11,6 +11,9 @@ var jump_pressed := false
 var jump_held := false
 var attack_pressed := false
 var dash_pressed := false
+## Focus/cast button: tap to cast the spell, hold on the ground to heal.
+var focus_pressed := false
+var focus_held := false
 
 
 func read_from_devices() -> void:
@@ -21,6 +24,8 @@ func read_from_devices() -> void:
 	jump_held = Input.is_action_pressed(&"jump")
 	attack_pressed = Input.is_action_just_pressed(&"attack")
 	dash_pressed = Input.is_action_just_pressed(&"dash")
+	focus_pressed = Input.is_action_just_pressed(&"focus")
+	focus_held = Input.is_action_pressed(&"focus")
 
 
 func clear() -> void:
@@ -30,3 +35,5 @@ func clear() -> void:
 	jump_held = false
 	attack_pressed = false
 	dash_pressed = false
+	focus_pressed = false
+	focus_held = false

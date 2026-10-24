@@ -216,7 +216,7 @@ Kept deliberately thin so time stays on feel:
 | M1 | Core movement | Run, jump, coyote, buffer, variable height, apex hang, fall gravity, corner correction | Graybox course feels tight in playtest | Done 2026-10-22 |
 | M2 | Advanced movement | Dash, wall slide, wall jump, double jump, ability flags, challenge course | Metrics documented; clean challenge run (§2.4) | Done 2026-10-23 |
 | M3 | Nail combat | Hitbox/hurtbox, 3-direction attacks, recoil, pogo, hit-stop, juice | Pogo chain test passes | Done 2026-10-23 |
-| M4 | Health and Soul | Masks, i-frames, hazard respawn, Soul gain, heal, one spell | Heal interrupt works | Next |
+| M4 | Health and Soul | Masks, i-frames, hazard respawn, Soul gain, heal, one spell | Heal interrupt works | Built 2026-10-23; awaiting playtest |
 | M5 | Enemies | Crawler, flyer, charger | Each one playtested in isolation |  |
 | M6 | Boss | 2-phase boss with arena | Difficulty targets met |  |
 | M7 | Slice world | Rooms, camera, bench, save, Shade, ability gate, HUD | Full slice playable start to finish |  |
@@ -254,6 +254,16 @@ controls are fun to use in an empty room.
   successful spike pogo (the slash connected as the body sank into the
   spikes); fixed with a 0.05 s spike grace after any pogo, with a regression
   test. 74 tests.
+- **M4 (built 2026-10-23, awaiting playtest):** 5 masks; contact damage
+  with knockback, stun, hit-stop and 1.3 s flickering invulnerability;
+  graybox spikes cost a mask and return you to the last safe ground, and
+  running out restarts the section (Soul lost); Soul from nail hits (11,
+  max 99); focus/cast on one button (tap = piercing spell, hold = heal) with
+  a HUD Soul vessel that drains while focusing; heals stop on release, a hit
+  or leaving the ground, losing the drained Soul. Thorny dummy and dart
+  turret in graybox section 9. Exit check passes: a dart hitting mid-focus
+  stops the heal (mutation-checked so it can't pass by the knockback lifting
+  the player). 90 tests.
 
 ---
 

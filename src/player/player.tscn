@@ -5,6 +5,8 @@
 [ext_resource type="Script" path="res://src/player/player_visual.gd" id="3_visual"]
 [ext_resource type="Script" path="res://src/preview/player_skin.gd" id="4_skin"]
 [ext_resource type="Script" path="res://src/player/nail_attack.gd" id="5_nail"]
+[ext_resource type="Script" path="res://src/player/player_health.gd" id="6_health"]
+[ext_resource type="Script" path="res://src/player/heal_fx.gd" id="7_healfx"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
 size = Vector2(20, 40)
@@ -35,3 +37,9 @@ script = ExtResource("4_skin")
 
 [node name="Nail" type="Node2D" parent="."]
 script = ExtResource("5_nail")
+
+[node name="Health" type="Node" parent="."]
+script = ExtResource("6_health")
+
+[node name="HealFx" type="Node2D" parent="."]
+script = ExtResource("7_healfx")

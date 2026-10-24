@@ -66,6 +66,23 @@ Down-slashes bounce off anything pogo-able: dummies, lanterns and spikes.
 Side and up swings ignore spikes. Swinging doesn't slow running; you can't
 swing mid-dash.
 
+## Health and Soul (M4)
+
+| Metric | Value |
+|---|---|
+| Masks | 5 |
+| Taking a hit | −1 mask, knocked 250 px/s away and 300 px/s up, 0.2 s stun, 0.12 s hit-stop |
+| Invulnerability after a hit | 1.3 s (the player flickers) |
+| Spikes (graybox) | −1 mask even while invulnerable, back to the last safe ground (a tile clear of spikes) |
+| Out of masks (graybox) | Section restarts with full masks; Soul is lost |
+| Soul | +11 per nail hit on something that takes damage (not spikes or lanterns), max 99 |
+| Focus (hold button on the ground) | 0.9 s for 1 mask, costs 33 Soul; can't move; keeps going while held |
+| Interrupted focus (release, hit, leaving the ground) | No mask; the Soul drained so far is lost |
+| Spell (tap button, under 0.2 s) | 33 Soul, 900 px/s bolt, 3 damage, pierces targets, stops at walls |
+
+The challenge course keeps instant checkpoint deaths for spikes and pits and
+refills masks on every death, since it tests movement, not health.
+
 ## Design rules that follow
 
 - **Gaps:** up to 7 tiles is comfortable, 8 is an expert-only coyote jump
@@ -109,7 +126,8 @@ swing mid-dash.
 | F6 | Switch to the challenge course (and back) |
 | F7 / touchpad click | Preview art on/off (visual only; see CREDITS.md) |
 | X or J | Attack: hold up to swing up, hold down in the air to swing down (pogo) |
-| 1–8 | Jump to gaps, pillars, corner, ledge, dash, walls, double jump, combat |
+| F or L | Focus/cast: tap to cast the spell, hold on the ground to heal |
+| 1–9 | Jump to gaps, pillars, corner, ledge, dash, walls, double jump, combat, health |
 | R / Options | Return to the last section (challenge: restart the run) |
 
 Missed gaps drop into a 2-tile pit you can climb out of.
@@ -122,5 +140,6 @@ Missed gaps drop into a 2-tile pit you can climb out of.
 | Cross | Jump (hold for higher) |
 | R2 | Dash (fires past 40% of the trigger) |
 | Square | Attack (hold up or down to aim) |
+| Circle | Focus/cast: tap to cast, hold to heal |
 | Options | Same as R |
 | Touchpad click | Same as F7 |

@@ -18,6 +18,9 @@ func _ready() -> void:
 		&"swing": _make(0.09, _swing),
 		&"hit": _make(0.08, _hit),
 		&"pogo": _make(0.12, _pogo),
+		&"hurt": _make(0.22, _hurt),
+		&"cast": _make(0.25, _cast),
+		&"heal": _make(0.35, _heal),
 	}
 	for i: int in VOICES:
 		var player := AudioStreamPlayer.new()
@@ -69,3 +72,23 @@ func _hit(t: float, _duration: float) -> float:
 func _pogo(t: float, duration: float) -> float:
 	var blip := sin(TAU * (500.0 + 900.0 * t / duration) * t) * exp(-t * 18.0) * 0.35
 	return _hit(t, duration) * 0.8 + blip
+
+
+## Hurt: a heavy, low crunch.
+func _hurt(t: float, _duration: float) -> float:
+	var crunch := _rng.randf_range(-1.0, 1.0) * exp(-t * 18.0) * 0.7
+	var drop := sin(TAU * (220.0 - 400.0 * t) * t) * exp(-t * 10.0) * 0.6
+	return crunch + drop
+
+
+## Cast: a rising airy sweep.
+func _cast(t: float, duration: float) -> float:
+	var envelope := sin(PI * t / duration)
+	var tone := sin(TAU * (300.0 + 1200.0 * t / duration) * t) * 0.3
+	return (tone + _rng.randf_range(-1.0, 1.0) * 0.25) * envelope
+
+
+## Heal: two soft chimes, a fifth apart.
+func _heal(t: float, _duration: float) -> float:
+	var chime := sin(TAU * 660.0 * t) + sin(TAU * 990.0 * t) * 0.6
+	return chime * exp(-t * 9.0) * 0.35

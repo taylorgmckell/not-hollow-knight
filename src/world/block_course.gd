@@ -19,6 +19,7 @@ const FEATURE_RADIUS := 6.0
 const SECTION_ACTIONS: Array[StringName] = [
 	&"debug_section_1", &"debug_section_2", &"debug_section_3", &"debug_section_4",
 	&"debug_section_5", &"debug_section_6", &"debug_section_7", &"debug_section_8",
+	&"debug_section_9",
 ]
 
 ## Scene that F6 switches to.
@@ -28,10 +29,14 @@ const SECTION_ACTIONS: Array[StringName] = [
 var blocks: Array[Rect2] = []
 var hazards: Array[Rect2] = []
 var labels: Array[Dictionary] = []
-## Each: {name, at}. Number keys 1-8 trigger `_on_section_key`.
+## Each: {name, at}. Number keys 1-9 trigger `_on_section_key`.
 var sections: Array[Dictionary] = []
-## Training dummies and pogo lanterns to spawn: {at (tiles), lantern}.
+## Training dummies and pogo lanterns to spawn: {at (tiles), lantern, harmful}.
 var dummies: Array[Dictionary] = []
+## Dart turrets to spawn: {at (tiles), direction, interval}.
+var turrets: Array[Dictionary] = []
+## Last standing spot well clear of spikes; spike hits return the player here.
+var safe_point := Vector2.ZERO
 
 @onready var player: Player = $Player
 
@@ -50,11 +55,21 @@ func _ready() -> void:
 	for spec: Dictionary in dummies:
 		var dummy := TrainingDummy.new()
 		dummy.lantern = spec.lantern
+		dummy.harmful = spec.harmful
 		dummy.position = spec.at * TILE
 		add_child(dummy)
+	for spec: Dictionary in turrets:
+		var turret := DartTurret.new()
+		turret.direction = spec.direction
+		turret.interval = spec.interval
+		turret.position = spec.at * TILE
+		add_child(turret)
 	add_child(CourseSkin.new(self))
+	add_child(PlayerHud.new(player))
+	player.health.died.connect(_on_player_died)
 	queue_redraw()
 	_course_ready()
+	safe_point = player.global_position
 
 
 func _physics_process(delta: float) -> void:
@@ -64,6 +79,7 @@ func _physics_process(delta: float) -> void:
 	for i: int in mini(SECTION_ACTIONS.size(), sections.size()):
 		if Input.is_action_just_pressed(SECTION_ACTIONS[i]):
 			_on_section_key(i)
+	_track_safe_point()
 	_course_physics(delta)
 
 
@@ -95,6 +111,11 @@ func _on_section_key(_index: int) -> void:
 	pass
 
 
+## Masks ran out. The base just refills them where the player stands.
+func _on_player_died() -> void:
+	player.health.restore(true)
+
+
 ## Key help shown in the F1 overlay.
 func controls_hint() -> String:
 	return ""
@@ -111,9 +132,14 @@ func add_hazard(rect: Rect2) -> void:
 
 
 ## A dummy stands with its feet at the tile position; a lantern floats
-## centred on it.
-func add_dummy(tile_x: float, tile_y: float, lantern := false) -> void:
-	dummies.append({at = Vector2(tile_x, tile_y), lantern = lantern})
+## centred on it. A harmful dummy is thorny: it hurts on touch.
+func add_dummy(tile_x: float, tile_y: float, lantern := false, harmful := false) -> void:
+	dummies.append({at = Vector2(tile_x, tile_y), lantern = lantern, harmful = harmful})
+
+
+## Fires darts horizontally (direction -1 = left) every `interval` seconds.
+func add_turret(tile_x: float, tile_y: float, direction: int, interval: float) -> void:
+	turrets.append({at = Vector2(tile_x, tile_y), direction = direction, interval = interval})
 
 
 func add_label(tile_x: float, tile_y: float, text: String) -> void:
@@ -126,6 +152,17 @@ func add_label(tile_x: float, tile_y: float, text: String) -> void:
 
 func add_section(section_name: String, tile_x: float, tile_y: float = GROUND_ROW) -> void:
 	sections.append({name = section_name, at = Vector2(tile_x * TILE, tile_y * TILE)})
+
+
+func _track_safe_point() -> void:
+	if not player.is_on_floor() or not (player.state_name in [&"idle", &"run", &"focus"]):
+		return
+	# At least a tile of clearance from any spikes, so returning here is safe.
+	var body := Rect2(player.global_position + Vector2(-10, -40), Vector2(20, 40)).grow(TILE)
+	for rect: Rect2 in hazards:
+		if body.intersects(Rect2(rect.position * TILE, rect.size * TILE)):
+			return
+	safe_point = player.global_position
 
 
 func touching_hazard() -> bool:

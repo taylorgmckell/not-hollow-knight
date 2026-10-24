@@ -38,6 +38,7 @@ func _process(delta: float) -> void:
 	_squash = _squash.lerp(Vector2.ONE, minf(1.0, SQUASH_RECOVER * delta))
 	_sprite.region_rect = PreviewArt.region(Vector2i(_frame(), PreviewArt.PLAYER_ROW))
 	scale = Vector2(PIXEL_SCALE * _squash.x * _player.facing, PIXEL_SCALE * _squash.y)
+	modulate.a = _player.health.flicker_alpha()
 
 
 func _frame() -> int:

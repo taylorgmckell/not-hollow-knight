@@ -8,3 +8,4 @@ extends Node2D
 func _process(_delta: float) -> void:
 	scale.x = _player.facing
 	visible = not PreviewArt.enabled
+	modulate.a = _player.health.flicker_alpha()

@@ -2,7 +2,8 @@ class_name NailAttack
 extends Node2D
 ## The nail: side, up and down (air only) swings, chosen from the held
 ## direction when the swing starts. It overlays movement, so the player keeps
-## running and jumping while swinging, but can't swing mid-dash.
+## running and jumping while swinging, but can't swing mid-dash, while hurt
+## or while focusing.
 ##
 ## The player calls `physics_update` after moving. Hits are found by querying
 ## the physics space each active tick, so a swing connects on the same tick it
@@ -67,7 +68,7 @@ func physics_update(delta: float) -> void:
 		buffer_timer = t.attack_buffer_time
 	else:
 		buffer_timer = maxf(buffer_timer - delta, 0.0)
-	if buffer_timer > 0.0 and cooldown_timer <= 0.0 and player.state_name != &"dash":
+	if buffer_timer > 0.0 and cooldown_timer <= 0.0 and player.can_attack():
 		_start_swing()
 	if active_timer > 0.0:
 		_check_hits()
@@ -130,6 +131,7 @@ func _land_hit(box: Hurtbox, bounces: bool) -> void:
 			push = Vector2.DOWN
 	if box.takes_damage:
 		box.receive(DamageInfo.make(t.nail_damage, player.global_position, push, t.nail_knockback, direction))
+		player.health.gain_soul(t.soul_per_hit)
 	if bounces:
 		player.pogo()
 	elif direction == &"side":

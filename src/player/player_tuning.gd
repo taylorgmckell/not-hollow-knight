@@ -67,6 +67,27 @@ extends Resource
 @export_range(0.0, 1000.0, 10.0, "suffix:px/s") var nail_knockback := 300.0
 @export_range(0.0, 0.2, 0.005, "suffix:s") var hit_stop_time := 0.05
 
+@export_group("Health")
+@export_range(1, 12, 1) var max_masks := 5
+## Invulnerability after taking damage (the player flickers).
+@export_range(0.0, 3.0, 0.05, "suffix:s") var invuln_time := 1.3
+@export_range(0.0, 600.0, 1.0, "suffix:px/s") var hurt_knockback_x := 250.0
+@export_range(0.0, 600.0, 1.0, "suffix:px/s") var hurt_knockback_y := 300.0
+## Control is lost for this long after a hit.
+@export_range(0.0, 0.6, 0.01, "suffix:s") var hurt_stun_time := 0.2
+@export_range(0.0, 0.3, 0.005, "suffix:s") var hurt_hit_stop := 0.12
+
+@export_group("Soul")
+@export_range(0, 99, 1) var soul_per_hit := 11
+## Focus: hold the button on the ground to spend this much Soul for 1 mask.
+@export_range(0, 99, 1) var focus_cost := 33
+@export_range(0.2, 3.0, 0.05, "suffix:s") var focus_time := 0.9
+## Pressing and releasing faster than this casts the spell instead of focusing.
+@export_range(0.05, 0.5, 0.01, "suffix:s") var tap_threshold := 0.2
+@export_range(0, 99, 1) var spell_cost := 33
+@export_range(1, 20, 1) var spell_damage := 3
+@export_range(100.0, 2000.0, 10.0, "suffix:px/s") var spell_speed := 900.0
+
 @export_group("Forgiveness")
 ## Max sideways nudge around a ceiling corner that clips the head.
 @export_range(0, 16, 1, "suffix:px") var corner_correction := 6

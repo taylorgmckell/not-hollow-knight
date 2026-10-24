@@ -66,10 +66,14 @@ func test_pogo_chain_is_clearable() -> void:
 		var lantern := node as TrainingDummy
 		if graybox.is_ancestor_of(lantern):
 			targets.append(lantern.global_position + Vector2(0, -TrainingDummy.LANTERN_SIZE.y / 2.0))
-	# The spiked post: the one hazard that sits above the pit floor.
+	# The spiked post: the one hazard between the lanterns raised above the pit floor.
+	var lantern_xs := targets.map(func(v: Vector2) -> float: return v.x)
+	var chain_left: float = lantern_xs.min()
+	var chain_right: float = lantern_xs.max()
 	for rect: Rect2 in graybox.hazards:
-		if rect.position.y < BlockCourse.GROUND_ROW:
-			targets.append(Vector2(rect.get_center().x, rect.position.y) * BlockCourse.TILE)
+		var top := Vector2(rect.get_center().x, rect.position.y) * BlockCourse.TILE
+		if rect.position.y < BlockCourse.GROUND_ROW and top.x > chain_left and top.x < chain_right:
+			targets.append(top)
 	targets.sort_custom(func(a: Vector2, b: Vector2) -> bool: return a.x < b.x)
 	assert_eq(targets.size(), 5, "four lanterns and a spiked post")
 	var chain_start: float = targets[0].x - 3 * BlockCourse.TILE
@@ -114,3 +118,52 @@ func test_pogo_chain_is_clearable() -> void:
 	assert_eq(pogos[0], targets.size(), "bounced once off each target")
 	assert_true(player.is_on_floor() and player.global_position.x > last_x,
 			"landed past the chain (x %.0f)" % player.global_position.x)
+
+
+func _health_spikes() -> Rect2:
+	var health_x: float = graybox.sections[8].at.x / BlockCourse.TILE
+	for rect: Rect2 in graybox.hazards:
+		if rect.position.x > health_x and rect.position.y < BlockCourse.GROUND_ROW:
+			return rect
+	return Rect2()
+
+
+func test_spikes_cost_a_mask_and_return_to_safe_ground() -> void:
+	var spikes := _health_spikes()
+	assert_true(spikes.size.x > 0.0, "found the health section's spikes")
+	var ground_y := BlockCourse.GROUND_ROW * BlockCourse.TILE - 2.0
+	player.respawn(Vector2((spikes.position.x - 3) * BlockCourse.TILE, ground_y))
+	await tick(10)
+	var safe: Vector2 = graybox.safe_point
+	assert_true(safe.x < spikes.position.x * BlockCourse.TILE, "safe point recorded before the spikes")
+	var masks_before := player.health.masks
+	player.input.move_x = 1.0
+	for i: int in 60:
+		await tick()
+		if player.health.masks < masks_before:
+			break
+	player.input.move_x = 0.0
+	await tick()
+	assert_eq(player.health.masks, masks_before - 1, "lost a mask")
+	# The safe point follows the player up to a tile short of the spikes.
+	var spikes_left := spikes.position.x * BlockCourse.TILE
+	assert_true(player.global_position.x >= safe.x and player.global_position.x <= spikes_left - BlockCourse.TILE,
+			"back on safe ground at least a tile before the spikes (x %.0f, spikes at %.0f)" % [player.global_position.x, spikes_left])
+	assert_true(player.is_on_floor() or player.velocity.y >= 0.0, "standing, not falling into them")
+
+
+func test_out_of_masks_restarts_the_section() -> void:
+	var spikes := _health_spikes()
+	graybox._on_section_key(8)
+	await tick(5)
+	var spawn: Vector2 = graybox.sections[8].at
+	player.health.masks = 1
+	player.health.soul = 50
+	player.respawn(Vector2(spikes.get_center().x * BlockCourse.TILE, 0))
+	for i: int in 120:
+		await tick()
+		if player.health.masks == player.health.max_masks():
+			break
+	assert_eq(player.health.masks, player.health.max_masks(), "full masks again")
+	assert_eq(player.health.soul, 0, "Soul lost on death")
+	assert_near(player.global_position.x, spawn.x, 40.0, "back at the section start")

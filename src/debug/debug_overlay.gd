@@ -13,6 +13,8 @@ const STATE_COLORS := {
 	&"fall": Color.CORNFLOWER_BLUE,
 	&"dash": Color.WHITE,
 	&"wall_slide": Color.MEDIUM_PURPLE,
+	&"hurt": Color.RED,
+	&"focus": Color.AQUAMARINE,
 }
 const ASSIST_COLORS := {
 	&"corner": Color.MAGENTA,
@@ -34,7 +36,8 @@ var _layer := CanvasLayer.new()
 func _ready() -> void:
 	z_index = 10
 	_layer.layer = 50
-	_label.position = Vector2(16, 16)
+	# Below the HUD's Soul vessel and masks.
+	_label.position = Vector2(16, 120)
 	_label.add_theme_font_size_override(&"font_size", 20)
 	_label.add_theme_color_override(&"font_outline_color", Color.BLACK)
 	_label.add_theme_constant_override(&"outline_size", 4)
@@ -107,6 +110,9 @@ func _describe() -> String:
 			"ready" if player.double_jump_available else "used",
 			player.dash_cooldown_timer],
 		"abilities %s" % ("ON" if GameState.has_dash else "OFF"),
+		"health  masks %d/%d   soul %d   invuln %.2f   focus %.0f%%" % [
+			player.health.masks, player.health.max_masks(), player.health.soul,
+			player.health.invuln_timer, player.health.focus_progress * 100.0],
 		"nail    %s   cd %.2f   last %s" % [
 			"SWING" if player.nail.is_active() else "ready" if player.nail.cooldown_timer <= 0.0 else "-",
 			player.nail.cooldown_timer, player.nail.direction],

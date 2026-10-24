@@ -99,13 +99,20 @@ func restart_run() -> void:
 	deaths = 0
 	practice = false
 	checkpoint_index = 0
+	player.health.restore(true)
 	player.respawn(sections[0].at)
 
 
 func _die(cause: String) -> void:
 	deaths += 1
 	died.emit(cause)
+	# Movement test: any death is a clean restart from the checkpoint.
+	player.health.restore(false)
 	player.respawn(sections[checkpoint_index].at)
+
+
+func _on_player_died() -> void:
+	_die("damage")
 
 
 func _check_checkpoints() -> void:
